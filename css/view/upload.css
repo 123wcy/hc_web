@@ -1,0 +1,74 @@
+.img-list{
+	position:relative;
+	width: 240px;
+	height: 148px;
+	display: inline-block;
+}
+.el-upload-list--picture-card .el-upload-list__item{margin:0;}
+.inputUpload{
+	position:absolute;
+	width: 240px;
+	height: 148px;
+	top:0;
+	left: 0;
+	z-index: 10;
+	opacity: 0;
+	filter:alpha(opacity=0);
+}
+.uploadIcon{
+	position:absolute;
+	top: 0;
+	left: 0;
+	bottom:0;
+	right: 0;
+	border: 1px solid #c0ccda;
+	border-radius: 6px;
+	font-size: 28px;
+	text-align: center;
+	line-height: 148px;
+	color: #c0ccda;
+	cursor:pointer;
+}
+.imgTitle{
+	text-align: center;
+}
+.uploadImg{
+	text-align: center;
+}
+.subTitle{
+	font-size: 16px;
+}
+.subTitle .subtxt{
+	color: #337ab7;
+}
+.subTitle .subLink{
+	color: #333;
+}
+.imgWrapper{
+	position:absolute;
+	top: 0;
+	left: 0;
+	bottom:0;
+	right: 0;
+	border-radius: 6px;
+}
+.imgWrapper>img{
+	width: 100%;
+	height: 100%;
+}
+.imgWrapper .deleIcon{
+	position:absolute;
+	width: 24px;
+	height: 24px;
+	top: -12px;
+	right: -12px;
+	padding: 6px;
+	z-index: 12;
+}
+.imgWrapper .deleIcon>i{
+	position:absolute;
+	top: 6px;
+	left:6px;
+	font-size: 24px;
+	color: #F56C6C;	
+}

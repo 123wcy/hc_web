@@ -1,0 +1,391 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>潢川电子商务进农村</title>
+	<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+	<script type="text/javascript" src="../../lib/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="../../lib/bootstrap-3.3.7-dist/css/bootstrap.css">
+	<link href="../../css/reset.css" rel="stylesheet" />
+	<link href="../../css/zheng/admin.css" rel="stylesheet" />
+	<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet" />
+
+	<style>
+		#app {
+			padding: 40px 100px;
+		}
+
+		[v-cloak] {
+			display: none;
+		}
+
+		.demo-tab-nav .nav-tabs {
+			width: 348px;
+			margin: 0 auto;
+			border: 1px solid #337ab7;
+		}
+
+		.demo-tab-nav .nav-tabs li {
+			width: 173px;
+			text-align: center;
+		}
+
+		.demo-tab-table .nav-tabs {
+			width: 88px;
+			border: 1px solid #337ab7;
+		}
+
+		.demo-tab-table .nav-tabs li {
+			width: 87px;
+			text-align: center;
+		}
+
+		.demo-input-spec .nav-tabs {
+			width: 100px;
+			border: 1px solid #337ab7;
+		}
+
+		.demo-input-spec .nav-tabs li {
+			width: 49px;
+			text-align: center;
+		}
+
+		.demo-input-spec .nav>li>a {
+			padding: 2px 3px;
+		}
+
+		.demo-tab-table .nav-tabs>li>a {
+			line-height: 1.1;
+		}
+
+		.demo-input-spec .nav-tabs>li>a {
+			line-height: 1.1;
+		}
+
+		.demo-input-single {
+			width: 460px;
+		}
+
+		.el-cascader {
+			line-height: initial;
+			display: initial;
+		}
+
+		.demo-input-suffix {
+			width: 100%;
+		}
+
+		.demo-input-special {
+			width: 825px;
+		}
+
+		.tab-pane h1 {
+			background: url(../../img/title-bg.png) no-repeat;
+			width: 221px;
+			height: 52px;
+			text-indent: 40px;
+			line-height: 52px;
+			color: #fff;
+			font-size: 20px;
+			margin-top: 20px;
+		}
+
+		.demo-input-suffix {
+			margin-top: 20px;
+		}
+
+		.asterisk {
+			color: red;
+			margin-right: 5px;
+		}
+
+		.nav-tabs>li.active>a,
+		.nav-tabs>li.active>a:hover,
+		.nav-tabs>li.active>a:focus {
+			background: #337ab7;
+			color: #fff;
+			border: none;
+		}
+
+		.nav-tabs>li>a {
+			border-radius: 0;
+			margin: 0;
+			line-height: 2.1;
+			border: 0;
+		}
+
+		.nav-tabs>li>a:hover {
+			background: 0;
+		}
+
+		.demo-input-spec {
+			width: 355px;
+		}
+
+		.demo-input-spec2 {
+			width: 258px;
+		}
+
+		.el-select {
+			display: initial;
+		}
+
+		.demo-input-search {
+			width: 385px;
+			border: solid 1px #337ab7;
+		}
+
+		.demo-input-search input {
+			border: none;
+		}
+
+		.demo-input-search .el-input-group__append {
+			background: #337ab7;
+			color: #fff;
+			border: 0;
+			border-radius: 0;
+		}
+
+		.el-icon-search {
+			font-size: 25px;
+		}
+
+		.el-table th {
+			background: #337ab7;
+			color: #fff;
+		}
+
+		.el-pagination {
+			text-align: center;
+			margin-top: 40px;
+		}
+
+		.demo-btn {
+			width: 100%;
+			display: flex;
+			justify-content: center;
+		}
+
+		.el-button--primary {
+			background: #337ab7;
+			border: solid 1px #337ab7;
+		}
+
+		.el-button {
+			padding: 12px 50px;
+		}
+
+		.tsqk .form-control-feedback {
+			right: 60px;
+		}
+		.demo-btn button{
+			background: #337ab7;
+			color: #fff;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app" v-cloak>
+			<el-form class="demo-ruleForm tab-pane" :model="ruleForm" :rules="rules"
+				ref="ruleForm">
+				<h1>寄件人信息</h1>
+				<div class="demo-input-suffix clearfix">
+					<div class="demo-input-single fl">
+						<el-form-item prop="senderName">
+							<div><i class="asterisk">*</i>姓名：</div>
+							<el-input :disabled="true" v-model="ruleForm.senderName" placeholder="请填写联系人姓名"></el-input>
+						</el-form-item>
+					</div>
+					<div class="demo-input-single fr">
+						<el-form-item prop="senderCompany">
+							<div>公司：</div>
+							<el-input :disabled="true" v-model="ruleForm.senderCompany" placeholder="请填写公司名称">
+							</el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div class="demo-input-suffix clearfix">
+					<div class="demo-input-single fl">
+						<el-form-item prop="senderMobilephone">
+							<div><i class="asterisk">*</i>手机：</div>
+							<el-input :disabled="true" v-model="ruleForm.senderMobilephone" placeholder="请填写手机号码">
+							</el-input>
+						</el-form-item>
+					</div>
+
+					<div class="demo-input-single fr">
+						<el-form-item prop="senderPhone">
+							<div>固话：</div>
+							<el-input :disabled="true" v-model="ruleForm.senderPhone" placeholder="请填写固话号码"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div class="demo-input-suffix">
+					<div class="demo-input-single demo-input-special">
+						<el-form-item prop="senderAddress">
+							<div><i class="asterisk">*</i>地址：</div>
+							<el-input :disabled="true" v-model="ruleForm.senderAddress" placeholder="请填写地址"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div class="demo-input-suffix">
+					<div class="demo-input-single demo-input-special">
+						<el-form-item prop="senderStreet">
+							<div><i class="asterisk">*</i>详细地址：</div>
+							<el-input :disabled="true" v-model="ruleForm.senderStreet" placeholder="请填写详细地址"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<h1>收件人信息</h1>
+				<div class="demo-input-suffix clearfix">
+					<div class="demo-input-single fl">
+						<el-form-item prop="recipientName">
+							<div><i class="asterisk">*</i>姓名：</div>
+							<el-input :disabled="true" v-model="ruleForm.recipientName" placeholder="请填写联系人姓名"></el-input>
+						</el-form-item>
+					</div>
+					<div class="demo-input-single fr">
+						<el-form-item prop="recipientCompany">
+							<div>公司：</div>
+							<el-input :disabled="true" v-model="ruleForm.recipientCompany" placeholder="请填写公司名称"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div class="demo-input-suffix clearfix">
+					<div class="demo-input-single fl">
+						<el-form-item prop="recipientMobilephone">
+							<div><i class="asterisk">*</i>手机：</div>
+							<el-input :disabled="true" v-model="ruleForm.recipientMobilephone" placeholder="请填写手机号码"></el-input>
+						</el-form-item>
+					</div>
+					<div class="demo-input-single fr">
+						<el-form-item prop="recipientPhone">
+							<div>固话：</div>
+							<el-input :disabled="true" v-model="ruleForm.recipientPhone" placeholder="请填写固话号码"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div class="demo-input-suffix">
+					<div class="demo-input-single demo-input-special">
+						<el-form-item prop="recipientAddress">
+							<span><i class="asterisk">*</i>地址：</span>
+							<el-input :disabled="true" v-model="ruleForm.recipientAddress" placeholder="请填写地址"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div class="demo-input-suffix">
+					<div class="demo-input-single demo-input-special">
+						<el-form-item prop="recipientStreet">
+							<div><i class="asterisk">*</i>详细地址：</div>
+							<el-input :disabled="true" v-model="ruleForm.recipientStreet" placeholder="请填写详细地址"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<h1>货物信息</h1>
+				<div class="demo-input-suffix clearfix">
+					<div class="demo-input-single demo-input-spec fl tsqk">
+						<el-form-item prop="goodsWeight">
+							<div><i class="asterisk">*</i>重量：</div>
+							<el-input :disabled="true" v-model="ruleForm.goodsWeight" placeholder="请填写货物重量">
+								<template slot="append">kg</template>
+							</el-input>
+						</el-form-item>
+					</div>
+					<div class="demo-input-single demo-input-spec tsqk fl ml40">
+						<el-form-item prop="goodsNumber">
+							<div><i class="asterisk">*</i>件数：</div>
+							<el-input :disabled="true" v-model="ruleForm.goodsNumber" placeholder="请填写货物件数">
+								<template slot="append">件</template>
+							</el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div class="demo-input-suffix clearfix">
+					<div class="demo-input-single demo-input-spec fl">
+						<div class="clearfix">
+							<div class="fl">体积：</div>
+							<ul class="nav nav-tabs fl">
+								<li class="active"><a href="#tj" data-toggle="tab">体积</a></li>
+								<li><a href="#ckg" data-toggle="tab">长宽高</a></li>
+							</ul>
+						</div>
+						<div class="tab-content">
+							<div class="demo-input-spec tab-pane fade in active" id="tj">
+								<el-form-item prop="goodsVolume">
+									<el-input :disabled="true" v-model="ruleForm.goodsVolume" placeholder="请输入体积">
+										<template slot="append">m²</template>
+									</el-input>
+								</el-form-item>
+							</div>
+							<div class="tab-pane fade clearfix" id="ckg">
+								<div class="demo-input-spec fl">
+									<el-form-item prop="goodsLength">
+										<el-input :disabled="true" v-model="ruleForm.goodsLength" placeholder="请输入长">
+											<template slot="append">m</template>
+										</el-input>
+									</el-form-item>
+								</div>
+								<div class="demo-input-spec mt10 fl">
+									<el-form-item prop="goodsWidth">
+										<el-input :disabled="true" v-model="ruleForm.goodsWidth" placeholder="请输入宽">
+											<template slot="append">m</template>
+										</el-input>
+									</el-form-item>
+								</div>
+								<div class="demo-input-spec mt10 fl">
+									<el-form-item prop="goodsHeight">
+										<el-input :disabled="true" v-model="ruleForm.goodsHeight" placeholder="请输入高">
+											<template slot="append">m</template>
+										</el-input>
+									</el-form-item>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="demo-input-suffix clearfix">
+					<div class="demo-input-single demo-input-spec fl">
+						<el-form-item prop="goodsType">
+							<div><i class="asterisk">*</i>货物类型：</div>
+							<el-input :disabled="true" v-model="ruleForm.goodsType" placeholder="请输入货物类型"></el-input>
+						</el-form-item>
+					</div>
+					<div class="demo-input-single demo-input-spec fl ml40">
+						<el-form-item prop="goodsName">
+							<div>货物名称：</div>
+							<el-input :disabled="true" v-model="ruleForm.goodsName" placeholder="请输入货物名称"></el-input>
+						</el-form-item>
+					</div>
+					<div class="demo-input-single demo-input-spec fr">
+						<el-form-item prop="goodsMoney">
+							<div>金额：</div>
+							<el-input :disabled="true" v-model="ruleForm.goodsMoney" placeholder="请输入货物金额">
+								<template slot="append">元</template>
+							</el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<div class="demo-input-suffix">
+					<div class="demo-input-single demo-input-special">
+						<el-form-item prop="remarks">
+							<div>备注：</div>
+							<el-input :disabled="true" v-model="ruleForm.remarks" placeholder="请输入备注"></el-input>
+						</el-form-item>
+					</div>
+				</div>
+				<!-- <div class="demo-btn mt40">
+					<el-button type="submit" @click="saveForm">保存</el-button>
+				</div> -->
+			</el-form>
+
+	</div>
+	<script type="text/javascript" src="../../lib/vue.js"></script>
+	<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+	<script type="text/javascript" src="../../js/zheng/sourceInformation.1.js"></script>
+</body>
+
+</html>

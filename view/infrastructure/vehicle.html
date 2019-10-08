@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>车辆</title>
+		<link href="../../css/reset.css" rel="stylesheet"/>
+		<link href="../../css/style.css" rel="stylesheet"/>
+		<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet"/>
+		<link href="../../css/zheng/admin.css" rel="stylesheet"/>
+		<link href="../../css/common/sideBar.css" rel="stylesheet"/>
+		<style type="text/css">
+			[v-cloak]{display: none;}
+		</style>
+	</head>
+	<body>
+		<div id="app" class="rightSideBar" v-cloak>
+			<!--查询-->
+			<el-form :inline="true" :model="ruleForm" ref="ruleForm" class="demo-form-inline">
+				<el-form-item v-for="item in searchList" :label="item.label" :prop="item.value" :label-width="item.width?item.width:'80px'" :key="item.value">
+					<!-- 输入框 -->
+	                <el-input v-if="item.types === 'input'" clearable @clear="onSubmit" size="small" v-model="ruleForm[item.value]" :placeholder="item.placeholder"></el-input>
+			
+	                <!--选择器--> 
+	                <el-select v-else-if="item.types === 'select'" clearable @clear="onSubmit" size="small"  v-model="ruleForm[item.value]" :placeholder="item.placeholder" style="width:100%;">
+	                    <el-option v-for="(opt,o) in item.options" :key="o" :label="opt.label" :value="opt.value">
+	                    </el-option>
+	                </el-select>
+                </el-form-item>
+				<el-form-item>
+				    <el-button type="primary" size="small" style="margin-left: 20px;" @click="onSubmit">查询</el-button>
+				</el-form-item>
+			</el-form>
+			<!--操作-->
+			<el-row>
+				<el-button type="text" icon="el-icon-circle-plus-outline" @click="handleAdd">新增</el-button>
+				<el-button type="text" icon="el-icon-edit-outline" @click="handleEdit">编辑</el-button>
+				<el-button type="text" icon="el-icon-delete" @click="handleDelete">删除</el-button>
+				<el-button type="text" icon="el-icon-circle-close-outline" @click="handleClose">停用</el-button>
+				<el-button type="text" icon="el-icon-circle-check-outline" @click="handleOpen">启用</el-button>				
+			</el-row>
+			<!--表格-->
+			<div class="table">
+				<el-table
+				ref="multipleTable"
+				:data="tableData"
+				tooltip-effect="dark"
+				style="width: 100%"
+				border
+				v-loading="loading"
+				header-row-class-name="headBgColor hideCheckbox"
+				size="small"
+				:row-class-name="setBgColor"
+				@selection-change="handleSelectionChange">
+					<el-table-column type="selection" width="55" align="center"></el-table-column>
+					<el-table-column v-for="(column,index) in columns" :key="column.value" :fixed="column.fixed" :show-overflow-tooltip="true"
+					:label="column.label" :min-width="column.width ? column.width:''"
+					:prop="column.value" :formatter="formatter" align="center"></el-table-column>
+				</el-table>
+				<div class="pageInation">
+					<el-pagination
+				        @size-change="handleSizeChange"
+					    @current-change="handleCurrentChange"
+					    :current-page="currentPage"
+					    :page-sizes="pageSizes"
+					    :page-size="pageSize"
+					    layout="total, sizes, prev, pager, next, jumper"
+					    :total="totalPage">
+				    </el-pagination>
+				</div>
+			</div>
+		</div>	
+		<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+		<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+		<script type="text/javascript" src="../../lib/vue.js"></script>
+		<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+		<script type="text/javascript" src="../../js/common.js"></script>
+		<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+		<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+		<script type="text/javascript" src="../../api/easy.config.js"></script>
+		<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+		<script>
+			var app = new Vue({
+				el: '#app',
+				data: function(){
+					return {
+						loading: false,
+						multipleSelection: [], // 多选
+						tableData: [],
+						ruleForm: {
+							type: '',
+							plateNumber: ''
+						},
+						pageSizes: [10,20,30,50,100],
+						currentPage: 1, // 当前页码
+						pageSize: 10, // 默认一页显示数
+						totalPage: 1,
+						searchList: [
+							{
+								types: 'select',
+								label: '车辆类型',
+								placeholder: '请选择车辆类型',
+								value: 'type',
+								options: [
+									{label: '挂车', value:1},
+									{label: '半挂牵引车', value:2},
+									{label: '厢式载货车', value:3},
+									{label: '仓栅式载货车', value:4},
+									{label: '冷藏车', value:5},
+									{label: '栏板式载货车', value:6},
+									{label: '平板运输车', value:7},
+									{label: '牵引车', value:8},
+									{label: '其他', value:9}
+								]
+							},
+							{
+								types: 'input',
+								label: '车牌号',
+								placeholder: '请输入车牌号',
+								value: 'plateNumber'
+							}
+						],
+						columns: [
+							{label: '车辆类型',value: 'type'},
+							{label: '车牌号',value: 'plateNumber'},
+							{label: '运输线路',value: 'scope'},
+							{label: '长度（米）',value: 'length'},
+							{label: '载重（吨）',value: 'weight'},
+							{label: '体积（方）',value: 'volume'},
+							{label: '马力',value: 'horsepower'},
+							{label: '车辆所属',value: 'belong'}
+						]
+					}
+				},
+				computed: {
+					handleId: function(){
+						var id = [];
+						if(this.multipleSelection.length > 0){
+							this.multipleSelection.forEach(function(item){
+								id.push(item.id)
+							})
+						}
+						return id;
+					}
+				},
+				created: function(){
+					this.getData();
+				},
+				methods:{
+					// 获取数据
+					getData: function(){
+						var _this = this;
+						var _type = this.ruleForm.type ? this.ruleForm.type : 0;
+						var data = {
+							type: _type,
+							plateNumber: this.ruleForm.plateNumber,
+							pageScope: {
+								pageSize: this.pageSize, // 每页显示条数
+								pageNum: this.currentPage // 当前页数
+							}	
+						}
+						EasyAjax.ajax_Post_Json({
+							url: 'vehicle/queryPageList',
+							data: JSON.stringify(data)
+						},function(res){
+							if(res.success === true){
+								_this.tableData = res.data.list;
+								_this.totalPage = res.data.total;
+							}
+						})
+					},
+					// 查询
+					onSubmit: function(){
+						this.currentPage = 1;
+						this.getData();
+					},
+					// 新增
+					handleAdd: function(){
+						window.location.href="./vehicleHandle.html?pagetype=1";
+					},
+					// 编辑
+					handleEdit: function(){
+						if(this.multipleSelection.length === 0){
+							this.$message.error('请先勾选编辑列表');
+							return false;
+						}
+						
+						if(this.multipleSelection.length > 1){
+							this.$message.error('只能同时编辑一个列表信息');
+							return false;
+						}
+						var vehicleInfo = JSON.stringify(this.multipleSelection[0]);
+						localStorage.setItem('vehicleInfo', vehicleInfo)
+						window.location.href="./vehicleHandle.html?pagetype=2";
+					},
+					// 删除
+					handleDelete: function(){
+						var _this = this;
+						if(this.multipleSelection.length === 0){
+							this.$message.error('请先勾选删除列表');
+							return false;
+						}
+						this.$confirm('是否确认删除?', '提示', {
+				          confirmButtonText: '确定',
+				          cancelButtonText: '取消',
+				          type: 'warning'
+				        }).then(function(){
+				        	EasyAjax.ajax_Post_Json({
+								url: 'vehicle/deleteBatchIds',
+								data: JSON.stringify(_this.handleId)
+							},function(res){
+								if(res.success === true){
+									_this.getData();
+								}
+								_this.$message.success(res.message);
+							})
+				        }).catch(function(){
+				        });
+					},
+					// 停用
+					handleClose: function(){
+						var _this = this;
+						if(this.multipleSelection.length === 0){
+							this.$message.error('请先勾选停用列表');
+							return false;
+						}
+						this.$confirm('是否确认停用?', '提示', {
+				          confirmButtonText: '确定',
+				          cancelButtonText: '取消',
+				          type: 'warning'
+				        }).then(function(){
+				        	EasyAjax.ajax_Post_Json({
+								url: 'vehicle/closeBatchIds',
+								data: JSON.stringify(_this.handleId)
+							},function(res){
+								if(res.success === true){
+									_this.getData();
+								}
+								_this.$message.success(res.message);
+							})
+				        }).catch(function(){
+				        });
+					},
+					// 启用
+					handleOpen: function(){
+						var _this = this;
+						if(this.multipleSelection.length === 0){
+							this.$message.error('请先勾选启用列表');
+							return false;
+						}
+						this.$confirm('是否确认启用?', '提示', {
+				          confirmButtonText: '确定',
+				          cancelButtonText: '取消',
+				          type: 'warning'
+				        }).then(function(){
+				        	EasyAjax.ajax_Post_Json({
+								url: 'vehicle/openBatchIds',
+								data: JSON.stringify(_this.handleId)
+							},function(res){
+								if(res.success === true){
+									_this.getData();
+								}
+								_this.$message.success(res.message);
+							})
+				        }).catch(function(){
+				        });
+					},
+					// 一页显示几条
+					handleSizeChange: function(val){
+						this.pageSize = val;
+						this.getData();
+					},
+					// 切换当前页
+					handleCurrentChange: function(val){
+						this.currentPage = val;
+						this.getData();
+					},
+					handleSelectionChange: function(val){
+						this.multipleSelection = val;
+					},
+					// 处理表格数据
+					formatter: function(row, column, cellValue, index){
+						if(column.label === '车辆类型'){
+							var veType = '';
+							switch(row.type){
+								case 1:
+									veType = '挂车'
+									break;
+								case 2:
+									veType = '半挂牵引车'
+									break;
+								case 3:
+									veType = '厢式载货车'
+									break;
+								case 4:
+									veType = '仓棚式载货车'
+									break;
+								case 5:
+									veType = '冷藏车'
+									break;
+								case 6:
+									veType = '栏板式载货车'
+									break;
+								case 7:
+									veType = '平板运输车'
+									break;
+								case 8:
+									veType = '牵引车'
+									break;
+								case 9:
+									veType = '其他'
+									break;
+							}
+							return veType;
+						}else if(column.label === '车辆所属'){
+							var veBlong = '';
+							switch(row.belong){
+								case 1:
+									veBlong = '自由'
+									break;
+								case 2:
+									veBlong = '合作'
+									break;
+								case 3:
+									veBlong = '租用'
+									break;
+								case 4:
+									veBlong = '其他'
+									break;
+							}
+							return veBlong;
+						}else{
+							return cellValue;
+						}
+					},
+					// 开启，关闭背景色
+					setBgColor: function({row, rowIndex}){
+						if(row.active === 'N'){
+							return 'forbiddenUse'
+						}
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

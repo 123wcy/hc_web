@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>仓库及站点</title>
+		<link href="../../css/reset.css" rel="stylesheet"/>
+		<link href="../../css/style.css" rel="stylesheet"/>
+		<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet"/>
+		<link href="../../css/zheng/admin.css" rel="stylesheet"/>
+		<link href="../../css/common/sideBar.css" rel="stylesheet"/>
+		<style type="text/css">
+			[v-cloak]{display: none}
+			.el-table__row .hasClick{
+				cursor: pointer;
+			}
+			.pTile{
+				margin-bottom: 15px;
+				font-size: 16px;
+				text-align: center;
+			}
+			.table .el-table--small td{
+				font-size: 12px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app" class="rightSideBar" v-cloak>
+			<el-row>
+				<el-col :span="7">
+					<p class="pTile">中心仓</p>
+					<el-row>
+						<el-button type="text" icon="el-icon-circle-plus-outline" @click="handleAdd(3)">新增</el-button>
+						<el-button type="text" icon="el-icon-edit-outline" @click="handleEdit(3)">编辑</el-button>
+						<el-button type="text" icon="el-icon-delete" @click="handleDelete(3)">删除</el-button>
+						<el-button type="text" icon="el-icon-circle-close-outline" @click="handleClose(3)">关闭</el-button>
+						<el-button type="text" icon="el-icon-circle-check-outline" @click="handleOpen(3)">开启</el-button>				
+					</el-row>
+					<!--表格-->
+					<div class="table">
+						<el-table
+						ref="multiple3"
+						:data="tableData3"
+						tooltip-effect="dark"
+						style="width: 100%"
+						border
+						v-loading="loading"
+						header-row-class-name="headBgColor hideCheckbox"
+						size="small"
+						:cell-class-name="setClass"
+						:cell-style="selectedHighlight3"
+						:row-class-name="setBgColor"
+						@cell-click="showNextData"
+						@selection-change="handleSelectionChange3">
+							<el-table-column type="selection" width="55" align="center"></el-table-column>
+							<el-table-column v-for="(column,index) in columns" :key="column.value" :fixed="column.fixed" :show-overflow-tooltip="true"
+							:label="column.label" :min-width="column.width ? column.width:''"
+							:prop="column.value" align="center"></el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+				<el-col :span="7" :offset="1">
+					<p class="pTile">乡镇服务仓</p>
+					<el-row>
+						<el-button type="text" icon="el-icon-circle-plus-outline" @click="handleAdd(2)">新增</el-button>
+						<el-button type="text" icon="el-icon-edit-outline" @click="handleEdit(2)">编辑</el-button>
+						<el-button type="text" icon="el-icon-delete" @click="handleDelete(2)">删除</el-button>
+						<el-button type="text" icon="el-icon-circle-close-outline" @click="handleClose(2)">关闭</el-button>
+						<el-button type="text" icon="el-icon-circle-check-outline" @click="handleOpen(2)">开启</el-button>				
+					</el-row>
+					<!--表格-->
+					<div class="table">
+						<el-table
+						ref="multiple2"
+						:data="tableData2"
+						tooltip-effect="dark"
+						style="width: 100%"
+						border
+						v-loading="loading"
+						:cell-class-name="setClass"
+						:cell-style="selectedHighlight2"
+						:row-class-name="setBgColor"
+						@cell-click="showNextData"
+						header-row-class-name="headBgColor hideCheckbox"
+						size="small"
+						@selection-change="handleSelectionChange2">
+							<el-table-column type="selection" width="55" align="center"></el-table-column>
+							<el-table-column v-for="(column,index) in columns" :key="column.value" :fixed="column.fixed" :show-overflow-tooltip="true"
+							:label="column.label" :width="column.width ? column.width:''"
+							:prop="column.value" align="center"></el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+				<el-col :span="7" :offset="1">
+					<p class="pTile">村级站点</p>
+					<el-row>
+						<el-button type="text" icon="el-icon-circle-plus-outline" @click="handleAdd(1)">新增</el-button>
+						<el-button type="text" icon="el-icon-edit-outline" @click="handleEdit(1)">编辑</el-button>
+						<el-button type="text" icon="el-icon-delete" @click="handleDelete(1)">删除</el-button>
+						<el-button type="text" icon="el-icon-circle-close-outline" @click="handleClose(1)">关闭</el-button>
+						<el-button type="text" icon="el-icon-circle-check-outline" @click="handleOpen(1)">开启</el-button>				
+					</el-row>
+					<!--表格-->
+					<div class="table">
+						<el-table
+						ref="multiple1"
+						:data="tableData1"
+						tooltip-effect="dark"
+						style="width: 100%"
+						border
+						v-loading="loading"
+						:row-class-name="setBgColor"
+						header-row-class-name="headBgColor hideCheckbox"
+						size="small"
+						@selection-change="handleSelectionChange1">
+							<el-table-column type="selection" width="55" align="center"></el-table-column>
+							<el-table-column v-for="(column,index) in columns" :key="column.value" :fixed="column.fixed" :show-overflow-tooltip="true"
+							:label="column.label" :width="column.width ? column.width:''"
+							:prop="column.value" align="center"></el-table-column>
+						</el-table>
+					</div>
+				</el-col>
+			</el-row>
+			<!--新增弹出框-->
+			<el-dialog :title="title + '-' + titleTag" :visible.sync="dialogFormVisible" :before-close="formClose" center>
+				<el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="65px">
+					<el-row>
+						<el-col :span="11">
+							<el-form-item label="名称" prop="name">
+							  	<el-input v-model="ruleForm.name" size="small" autocomplete="off"></el-input>
+							</el-form-item>
+						</el-col>
+						<el-col :span="11" :offset="2">
+							<el-form-item label="负责人" prop="principal">
+							  	<el-input v-model="ruleForm.principal" size="small" autocomplete="off"></el-input>
+							</el-form-item>
+						</el-col>
+					</el-row>
+					<el-row>
+						<el-col :span="11">
+							<el-form-item label="电话" prop="telephone">
+							  	<el-input v-model="ruleForm.telephone" size="small" autocomplete="off"></el-input>
+							</el-form-item>
+						</el-col>
+						<el-col :span="11" :offset="2">
+							<el-form-item label="座机" prop="landline">
+							  	<el-input v-model="ruleForm.landline" size="small" autocomplete="off"></el-input>
+							</el-form-item>
+						</el-col>
+					</el-row>
+					<el-form-item label="地址" prop="address">
+					  	<el-input type="text" v-model="ruleForm.address" size="small"></el-input>
+					</el-form-item>
+					<el-form-item label="备注" prop="remarks">
+					  	<el-input type="textarea" v-model="ruleForm.remarks" size="small"></el-input>
+					</el-form-item>
+				  </el-form>
+				<div slot="footer" class="dialog-footer">
+					<el-button type="primary" @click="saveMsg">保存</el-button>
+				</div>
+			</el-dialog>			
+		</div>
+		<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+		<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+		<script type="text/javascript" src="../../lib/vue.js"></script>
+		<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+		<script type="text/javascript" src="../../js/common.js"></script>
+		<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+		<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+		<script type="text/javascript" src="../../api/easy.config.js"></script>
+		<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+		<script type="text/javascript">
+			var app = new Vue({
+				el: '#app',
+				data: {
+					loading: false,
+					dialogFormVisible: false, //新增
+					title: '',
+					titleTag: '',
+					curIndex3: '',
+					curIndex2: '',
+					selection3: [], // 县多选
+					selection2: [], // 乡镇多选
+					selection1: [], // 村多选
+					ruleForm: {
+						name: '',
+						principal: '',
+						telephone: '',
+						landline: '',
+						address: '',
+						remarks: '',
+						id: ''
+					},
+					columns: [
+						{
+							value: 'name',
+							label:'名称',
+							width: 150
+						},
+						{
+							value: 'principal',
+							label:'负责人',
+							width: 80
+						},
+						{
+							value: 'telephone',
+							label:'电话',
+							width: 100
+						},
+						{
+							value: 'landline',
+							label:'座机',
+							width: 100
+						},
+						{
+							value: 'address',
+							label:'地址',
+							width: 200
+						}
+					],
+					tableData3: [], // 县级数据
+					tableData2: [], // 县级对应乡镇数据
+					tableData1: [], // 乡镇对应村数据
+					storeData2: [], // 缓存乡镇数据
+					storeData1: [], // 缓存村级站点数据
+					levelTag: 3, // 3 中心仓， 2乡镇仓，1村
+					rules: {
+						name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+						principal: [{ required: true, message: '请输入负责人', trigger: 'blur'}],
+						telephone: [
+							{ required: true, message: '请输入电话', trigger: 'blur'},
+							{ pattern: /^1[34578]\d{9}$/, message: '手机号码格式不正确', trigger: 'blur'}
+						],
+						address: [{ required: true, message: '请输入地址', trigger: 'blur'}]
+					}
+				},
+				computed: {
+					handleId3: function(){
+						var id = [];
+						if(this.selection3.length > 0){
+							this.selection3.forEach(function(item){
+								id.push(item.id)
+							})
+						}
+						return id;
+					},
+					handleId2: function(){
+						var id = [];
+						if(this.selection2.length > 0){
+							this.selection2.forEach(function(item){
+								id.push(item.id)
+							})
+						}
+						return id;
+					},
+					handleId1: function(){
+						var id = [];
+						if(this.selection1.length > 0){
+							this.selection1.forEach(function(item){
+								id.push(item.id)
+							})
+						}
+						return id;
+					}
+				},
+				created() {
+					this.getData();
+				},
+				methods:{
+					// 获取数据
+					getData(){
+						var _this = this;
+						EasyAjax.ajax_Get_Json({
+							url: 'warehouse/findAll'
+						},function(res){
+							if(res.success === true){
+								var data = res.data;
+								var tab1 = [], tab2 = [], tab3 = [];
+								data.forEach(function(item){ // 县
+									if(item.level === 3){
+										tab3.push(item)
+									}else if(item.level === 2){ // 乡镇
+										tab2.push(item)
+									}else if(item.level === 1){ // 村
+										tab1.push(item)
+									}
+								})
+								_this.tableData3 = tab3;
+								_this.storeData2 = tab2;
+								_this.storeData1 = tab1;
+								
+								if(_this.curIndex3 !== '' && _this.curIndex2 !== ''){ //此时中心仓，乡镇服务仓都有被选中
+									_this.tableData1 = _this.getNextPlace(_this.tableData2[_this.curIndex2].id, tab1);
+									
+								}else if(_this.curIndex3 !== ''){ // 此时有中心仓被选中
+									_this.tableData2 = _this.getNextPlace(_this.tableData3[_this.curIndex3].id, tab2);
+								}
+							}
+						})
+					},
+					getTitle: function(level){
+						var str = '';
+						if(level === 3){
+							str = '中心仓' 
+						}else if(level === 2){
+							str = '乡镇服务仓'
+						}else if(level === 1){
+							str = '村级站点'
+						}
+						return str;
+						
+					},
+					// 新增
+					handleAdd: function(level){
+						if(level === 2){
+							if(this.selection3.length===0){
+								this.$message.error('请先勾选一个中心仓站点');
+								return false;
+							}
+							
+							if(this.selection3.length > 1){
+								this.$message.error('只能勾选一个中心仓站点');
+								return false;
+							}
+						}
+						if(level === 1){
+							if(this.selection2.length===0){
+								this.$message.error('请先勾选一个乡镇服务仓站点');
+								return false;
+							}
+							
+							if(this.selection3.length > 1){
+								this.$message.error('只能勾选一个乡镇服务仓站点');
+								return false;
+							}
+						}
+						this.levelTag = level;
+						this.initForm();
+						this.title = this.getTitle(level);
+						this.titleTag = '新增';
+						this.dialogFormVisible = true;
+					},
+					// 编辑
+					handleEdit: function(level){
+						if(this['selection'+level].length === 0){
+							this.$message.error('请先勾选编辑列表');
+							return false;
+						}
+						
+						if(this['selection'+level].length > 1){
+							this.$message.error('只能同时编辑一条列表');
+							return false;
+						}
+						this.levelTag = level;
+						this.title = this.getTitle(level);
+						this.titleTag = '编辑';
+						this.initForm(this['selection'+level][0]);
+						this.dialogFormVisible = true;
+					},
+					// 点击保存按钮
+					saveMsg: function(){
+						var _this = this;
+						this.$refs.ruleForm.validate(function(valid){
+							if(valid){ //验证通过
+								if(_this.titleTag === '新增'){
+									_this.saveData('warehouse/add');
+								}else{
+									_this.saveData('warehouse/update');
+								}
+							}
+						})
+					},
+					// 保存数据
+					saveData: function(url){
+						var _this = this;
+						var warehouseId;
+						if(this.levelTag === 3){
+							warehouseId = 0;
+						}else{
+							warehouseId = this['selection'+(this.levelTag + 1)][0].id;
+						}
+						var data = {
+							id: this.ruleForm.id,
+							name: this.ruleForm.name,
+							warehouseId: warehouseId,
+							principal: this.ruleForm.principal,
+							telephone: this.ruleForm.telephone,
+							landline: this.ruleForm.landline,
+							level: this.levelTag,
+							address: this.ruleForm.address,
+							remarks: this.ruleForm.remarks
+						}
+						if(this.titleTag === '新增'){
+							delete data.id;
+						}
+						if(this.titleTag === '编辑'){
+							delete data.level;
+							delete data.warehouseId;
+						}
+						EasyAjax.ajax_Post_Json({
+							url: url,
+							data: JSON.stringify(data)
+						},function(res){
+							if(res.success === true){
+								_this.getData();
+								// _this.$refs['multiple'+ _this.levelTag].clearSelection();
+							}
+							_this.$message.success(res.message);
+							_this.dialogFormVisible = false; //关闭弹出框
+						})
+					},
+					// 删除
+					handleDelete: function(level){
+						var _this = this;
+						if(this['selection'+level].length === 0){
+							this.$message.error('请先勾选删除列表');
+							return false;
+						}
+						if(level !== 1){
+							var data = this['handleId'+level];
+							for(var i=0;i<data.length;i++){
+								var hasChild = this.getNextPlace(data[i], this['storeData'+(level-1)])
+								if(hasChild.length > 0){
+									this.$message.error('您勾选的列表含有子站点，请先删除子站点');
+									return false;
+								}
+							}
+						}
+						
+						this.$confirm('是否确认删除?', '提示', {
+				          confirmButtonText: '确定',
+				          cancelButtonText: '取消',
+				          type: 'warning'
+				        }).then(function(){
+				        	EasyAjax.ajax_Post_Json({
+								url: 'warehouse/deleteBatchIds',
+								data: JSON.stringify(_this['handleId'+level])
+							},function(res){
+								if(res.success === true){
+									_this.getData();
+								}
+								_this.$message.success(res.message);
+							})
+				        }).catch(function(){
+				        });
+					},
+					// 关闭
+					handleClose: function(level){
+						var _this = this;
+						if(this['selection'+level].length === 0){
+							this.$message.error('请先勾选关闭列表');
+							return false;
+						}
+						this.$confirm('是否确定关闭?', '提示', {
+				          confirmButtonText: '确定',
+				          cancelButtonText: '取消',
+				          type: 'warning'
+				        }).then(function(){
+				        	EasyAjax.ajax_Post_Json({
+								url: 'warehouse/closeBatchIds',
+								data: JSON.stringify(_this['handleId'+level])
+							},function(res){
+								if(res.success === true){
+									_this.getData();
+								}
+								_this.$message.success(res.message);
+							})
+				        }).catch(function(){
+				        });
+					},
+					// 开启
+					handleOpen: function(level){
+						var _this = this;
+						if(this['selection'+level].length === 0){
+							this.$message.error('请先勾选开启列表');
+							return false;
+						}
+						if(this['selection'+level].length > 1){
+							this.$message.error('站点只能逐个开启');
+							return false;
+						}
+						var data = this['handleId'+level][0]
+						this.$confirm('是否确定开启?', '提示', {
+				          confirmButtonText: '确定',
+				          cancelButtonText: '取消',
+				          type: 'warning'
+				       }).then(function(){
+				        	EasyAjax.ajax_Get({
+								url: 'warehouse/open?id='+ data
+							},function(res){
+								if(res.success === true){
+									_this.getData();
+									// _this.$refs['multiple'+level].clearSelection();
+								}
+								_this.$message.success(res.message);
+							})
+				        }).catch(function(){
+				        	// _this.$refs['multiple'+level].clearSelection();       
+				        });
+						
+					},
+					// 点击显示下一个表格数据
+					showNextData: function(row, column, cell, event){
+						if(column.label === '名称'){
+							if(row.level === 3){ // 选择之前先清空
+								this.curIndex3 = row.curIndex;
+								this.curIndex2 = '';
+								this.tableData2 = [];
+								this.tableData1 = [];
+							}else{
+								this.curIndex2 = row.curIndex;
+								this.tableData1 = [];
+							}
+							this['tableData'+(row.level-1)] = this.getNextPlace(row.id, this['storeData'+(row.level-1)])
+						}
+					},
+					// 设置class
+					setClass: function({row,column,rowIndex}){
+						row.curIndex = rowIndex;
+						if(column.label === '名称'){
+							return 'hasClick'
+						}
+					},
+					// 点击单元格高亮
+					selectedHighlight3:　function({row, column, rowIndex}){
+						if(column.label === '名称' && this.curIndex3 === rowIndex ){
+							return {
+					          	"background-color": "#CAE1FF"
+					       }
+						}
+
+					},
+					selectedHighlight2: function({row, column, rowIndex}){
+						if(column.label === '名称' && this.curIndex2 === rowIndex ){
+							return {"background-color": "#CAE1FF"}
+						}
+					},
+					// 开启，关闭背景色
+					setBgColor: function({row, rowIndex}){
+						if(row.active === 'N'){
+							return 'forbiddenUse'
+						}
+					},
+					handleSelectionChange3: function(val) {
+						console.log(val,9999)
+				        this.selection3 = val;
+				   	},
+				   	handleSelectionChange2: function(val) {
+				   		console.log(val,8888)
+				        this.selection2 = val;
+				   	},
+				   	handleSelectionChange1: function(val) {
+				        this.selection1 = val;
+				   	},
+				   	// 关闭弹出框
+					formClose: function(){
+						this.dialogFormVisible = false;
+					},
+				   	// 给form赋值
+			        initForm: function(obj) {
+			        	let _this = this;
+			        	if(obj){
+			        		for (var key in this.ruleForm) {
+				                this.ruleForm[key] = obj[key]
+				            }
+			        	}else{
+			        		for (var key in this.ruleForm) {
+				                this.ruleForm[key] = ''
+				            }
+			        	}
+			            
+			            this.$nextTick(function(){
+			                if (_this.$refs.ruleForm && _this.$refs.ruleForm.clearValidate) {
+			                    _this.$refs.ruleForm.clearValidate()
+			                }
+			            })
+			        },
+			        // 根据id查询下级站点
+			        getNextPlace: function(id, obj){
+			        	var data = [];
+			        	obj.forEach(function(item){
+			        		if(item.warehouseId === id){
+			        			data.push(item)
+			        		}
+			        	})
+			        	return data;
+			        }
+				}
+			})
+		</script>
+	</body>
+</html>

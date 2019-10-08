@@ -1,0 +1,364 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>潢川电子商务进农村</title>
+	<link href="../../css/bootstrap.min.css" rel="stylesheet" />
+	<link href="../../css/reset.css" rel="stylesheet" />
+	<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet" />
+	<script src="../../lib/jquery.1.11.3.min.js"></script>
+	<!-- <script type="text/javascript" src="../lib/jquery.cookie.js"></script> -->
+	<script type="text/javascript" src="../../lib/vue.js"></script>
+	<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+	<script src="../../lib/JsBarcode-master/JsBarcode.all.js"></script>
+	<!--生成条形码-->
+	<script src="../../lib/jquery.qrcode.min.js"></script>
+	<!--生成二维码-->
+	<!-- <script src="../../lib/jQuery.print.min.js"></script> -->
+	<style type="text/css">
+		[v-cloak] {
+			display: none;
+		}
+
+		.el-mail {
+			width: 377px;
+			margin: 0 auto;
+			border: dashed 1px #89827c;
+			height: 680px;
+		}
+
+		.line-1 {
+			border-bottom: solid 1px #89827c;
+			height: 52px;
+		}
+
+		.line-1 img {
+			margin-left: 10px;
+			margin-top: 5px;
+		}
+
+		.money {
+			font-family: "黑体";
+			font-size: 7pt;
+			margin-left: 80px;
+			margin-top: 20px;
+
+		}
+
+		.m-kind {
+			width: 64px;
+			height: 51px;
+			background: #040001;
+			color: #fff;
+			font-family: "黑体";
+			font-size: 14pt;
+			padding-left: 10px;
+		}
+
+		.line-2 {
+			font-family: "Arial Black bold";
+			line-height: 56px;
+			text-align: center;
+			font-size: 28pt;
+			border-bottom: solid 1px #89827c;
+			font-weight: bold;
+		}
+
+		.line-3 {
+			height: 37px;
+			border-bottom: solid 1px #89827c;
+		}
+
+		.line-3 span {
+			margin-left: 20px;
+			margin-top: 8px;
+			font-weight: bold;
+		}
+
+		.line-3 img {
+			margin-right: 5px;
+			margin-top: 5px;
+			height: 23px;
+			;
+		}
+
+		.line-4 {
+			height: 56px;
+			border-bottom: solid 1px #89827c;
+		}
+
+		.sjr-s {
+			width: 33px;
+			font-size: 16pt;
+			font-family: "黑体";
+			padding-left: 4px;
+			padding-top: 4px;
+			font-weight: bold;
+		}
+
+		.line-4 .sjr-info {
+			width: 340px;
+			font-size: 8pt;
+			font-weight: bold;
+		}
+
+		.line-4 .sjr-info p {
+			font-family: "黑体";
+			line-height: 1.2;
+		}
+
+		.line-5 {
+			border-bottom: solid 1px #89827c;
+			height: 45px;
+		}
+
+		.line-5 .sjr-info p {
+			font-family: "黑体";
+			line-height: 1;
+		}
+
+		.line-5 .sjr-info {
+			width: 340px;
+			font-size: 8pt;
+		}
+
+		.line-6 {
+			height: 86px;
+			border-bottom: solid 1px #89827c;
+		}
+
+		.line-6 img {
+			margin-top: 6px;
+			margin-left: 38px;
+		}
+
+		.line-6 p {
+			text-align: center
+		}
+
+		.line-7 {
+			height: 102px;
+			border-bottom: solid 1px #89827c;
+		}
+
+		.sfwd {
+			font-size: 8pt;
+			width: 70px;
+			text-align: center;
+			border-right: solid 1px #89827c;
+			height: 91px;
+		}
+
+		.sfwd p {
+			font-size: 8pt;
+		}
+
+		.sfwd label {
+			margin-bottom: 0;
+		}
+
+		.ewm {
+			border-right: solid 1px #89827c;
+			height: 91px;
+			width: 91px;
+			;
+		}
+
+		.ewm img {
+			margin-left: 3px;
+			margin-top: 2px;
+		}
+
+		.jjxx {
+			padding: 2px;
+			width: 214px;
+			font-size: 8pt;
+		}
+
+		.line-8 {
+			height: 37px;
+			border-bottom: solid 1px #89827c;
+		}
+
+		.line-8 img {
+			margin-top: 5px;
+			margin-left: 5px;
+		}
+
+		.line-9 {
+			border-bottom: solid 1px #89827c;
+			height: 33px;
+			line-height: 33px;
+		}
+
+		.line-9 label {
+			margin-left: 10px;
+			margin-right: 150px;
+			margin-bottom: 0;
+
+		}
+
+		#output {
+			margin-left: 3px;
+			margin-top: 3px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app" class="wrapper" v-cloak>
+		<div class="el-mail" id="printPage">
+			<div class="line-1 clearfix" style="height:51px;">
+				<img src="../../img/yt-logo.jpg" alt="" class="fl">
+				<div class="money fl">代收货款：<span>￥ 300</span></div>
+				<div class="m-kind fr">代收<br>货款</div>
+			</div>
+			<div class="line-2" style="height:56px;">100-200-30-400</div>
+			<div class="line-3 clearfix" style="height:36px;">
+				<span class="fl">区域件</span>
+				<img class="fr" id="imgcode1">
+			</div>
+			<div class="line-4 clearfix" style="height:55px;">
+				<span class="sjr-s fl">收</span>
+				<div class="sjr-info fl" style="width: 340px;
+				font-size: 11pt;">
+					<p><span>小公举</span><span class="ml20">18206789876</span><span class="ml20">0329-09898988</span></p>
+					<p>黑龙江省齐齐哈尔市建华区文化大街42号齐齐哈尔大学计算机工程学院计算机001班</p>
+				</div>
+			</div>
+			<div class="line-5 clearfix" style="height:44px;">
+				<span class="sjr-s fl">寄</span>
+				<div class="sjr-info fl" style="width: 340px;
+				font-size: 10pt;margin-top:2px;">
+					<p><span>小公举</span><span class="ml20">18206789876</span><span class="ml20">0329-09898988</span></p>
+					<p>黑龙江省齐齐哈尔市建华区文化大街42号齐齐哈尔大学计算机工程学院计算机001班</p>
+				</div>
+			</div>
+			<div class="line-6" style="height:85px;">
+				<img id="imgcode2">
+			</div>
+			<div class="line-7 clearfix" style="height:91px;">
+				<div class="sfwd fl">
+					<p>2015/05/05</p>
+					<label>12:06:09</label>
+					<p><span>打印时间</span></p>
+					<h1>始发网点</h1>
+				</div>
+				<div class="ewm fl">
+					<div id="output"></div>
+				</div>
+				<div class="jjxx fl">
+					<p>快件送达收件人地址，经收件人或收件人（寄件人）允许的代收人签字，视为送达。</p>
+				</div>
+			</div>
+			<div class="line-8 clearfix" style="height:36px;">
+				<img src="../../img/yt-logo-s.jpg" alt="" class="fl">
+				<div class="txm-s fl">
+					<img id="imgcode3">
+				</div>
+			</div>
+			<div class="wr-spec clearfix" style="width:377px;border-bottom: dashed 1px #89827c;height:83px;">
+				<div class="fl">
+					<div class="line-4 clearfix" style="width:295px;height:43px;">
+						<span class="sjr-s fl">收</span>
+						<div class="sjr-info fl" style="width:260px;">
+							<p><span>小公举</span><span class="ml20">18206789876</span>
+							</p>
+							<p>黑龙江省齐齐哈尔市建华区文化大街42号齐齐哈尔大学</p>
+						</div>
+					</div>
+					<div class="line-5 clearfix" style="border-bottom:none;width:295px;height:41px;">
+						<span class="sjr-s fl">寄</span>
+						<div class="sjr-info fl" style="width:260px;">
+							<p><span>小公举</span><span class="ml20">18206789876</span>
+							</p>
+							<p>黑龙江省齐齐哈尔市建华区文化大街42号齐齐哈尔大学</p>
+						</div>
+					</div>
+				</div>
+				<div class="fr" style="width:82px;border-left:solid 1px #89827c;height: 82px;line-height: 41px;
+				text-align: center;">
+					商家自<br>定义区
+				</div>
+			</div>
+			<div class="line-9 clearfix" style="height:33px;">
+				<label>圆通速递</label>
+				<b>YT2000012345608</b>
+			</div>
+			<div class="line-9 clearfix"
+				style="height:21px;line-height:21px;letter-spacing: -1.4px;font-size:8pt;padding-left: 10px;">
+				打印时间：<span>2015/02/09 12:03:01</span>，
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;数量：<span>1</span>，
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;重量：<span>1.6kg</span>
+			</div>
+			<div class="line-4 clearfix" style="height:44px;">
+				<span class="sjr-s fl">收</span>
+				<div class="sjr-info fl">
+					<p><span>小公举</span><span class="ml20">18206789876</span><span class="ml20">0329-09898988</span></p>
+					<p>黑龙江省齐齐哈尔市建华区文化大街42号齐齐哈尔大学计算机工程学院计算机001班</p>
+				</div>
+			</div>
+			<div class="line-5 clearfix" style="border:0;height:44px;margin-top: 2px;">
+				<span class="sjr-s fl">寄</span>
+				<div class="sjr-info fl">
+					<p><span>小公举</span><span class="ml20">18206789876</span><span class="ml20">0329-09898988</span></p>
+					<p>黑龙江省齐齐哈尔市建华区文化大街42号齐齐哈尔大学计算机工程学院计算机001班</p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var app = new Vue({
+			el: '#app',
+			data: function () {
+				return {
+
+				}
+			},
+			created: function () {
+				JsBarcode("#imgcode1", "123", {
+					format: "code128a", //选择要使用的条形码类型
+					width: 2, //设置条之间的宽度
+					height: 23, //高度
+					lineColor: "#333", //设置条和文本的颜色。
+					displayValue: false, //是否在条形码下方显示文字
+					margin: 0 //设置条形码周围的空白边距
+				});
+				JsBarcode("#imgcode2", "YT2000012345608", {
+					format: "code128a", //选择要使用的条形码类型
+					width: 1.5, //设置条之间的宽度
+					height: 38, //高度
+					fontSize: 20, //设置文本的大小
+					lineColor: "#333", //设置条和文本的颜色。
+					displayValue: true, //是否在条形码下方显示文字
+					margin: 2 //设置条形码周围的空白边距
+				});
+				JsBarcode("#imgcode3", "YT2000012345608", {
+					format: "code128a", //选择要使用的条形码类型
+					width: 1.2, //设置条之间的宽度
+					height: 13, //高度
+					lineColor: "#333", //设置条和文本的颜色。
+					fontSize: 12, //设置文本的大小
+					displayValue: true, //是否在条形码下方显示文字
+					margin: 0, //设置条形码周围的空白边距
+					textMargin: 0 //设置条形码和文本之间的间距
+				});
+				$("#output").qrcode({
+					render: "table", //table方式 
+					width: 80, //宽度 
+					height: 80, //高度 
+					text: "www.helloweba.com" //任意内容 
+				});
+				jQuery('#output1').qrcode("http://www.jq22.com");
+			},
+			methods: {
+
+			}
+		})
+	</script>
+</body>
+
+</html>

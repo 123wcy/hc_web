@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>车辆</title>
+		<link href="../../css/reset.css" rel="stylesheet"/>
+		<link href="../../css/style.css" rel="stylesheet"/>
+		<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet"/>
+		<link href="../../css/zheng/admin.css" rel="stylesheet"/>
+		<link href="../../css/common/sideBar.css" rel="stylesheet"/>
+		<link rel="stylesheet" type="text/css" href="../../css/view/upload.css"/>
+		<style type="text/css">
+			[v-cloak]{display: none;}
+		</style>
+	</head>
+	<body>
+		<div id="app" class="rightSideBar" v-cloak>
+			<el-row class="subTitle"><a class="subLink" href="vehicle.html">车辆 </a> > <span class="subtxt">{{subtitle}}</span> </el-row>
+			<el-form :model="ruleForm" :rules="rules" ref="ruleForm">
+				<el-row>
+				<el-col :span="col.span ? col.span: 10" v-for="(col,idx) in columns" :key="col.value">
+					<el-form-item :label="col.types === 'upload'? '' : col.label" :prop="col.value" :label-width="col.types === 'upload'? '' : '200px'">
+						<!-- 输入框 -->
+		                <el-input v-if="col.types === 'input'" size="small" v-model="ruleForm[col.value]" 
+		                	:type="col.inputType?col.inputType:'text'" 
+		                	:rows="col.rows?col.rows:1"
+		                	:placeholder="col.placeholder" @focus="showDialog(col.value)"></el-input>
+		
+		                <!--选择器--> 
+		                <el-select v-else-if="col.types === 'select'" size="small"  v-model="ruleForm[col.value]" :placeholder="col.placeholder" style="width:100%;">
+		                    <el-option v-for="(opt,o) in col.options" :key="o" :label="opt.label" :value="opt.value">
+		                    </el-option>
+		                </el-select>
+
+		                <!-- 上传 -->
+	                    <div class="uploadImg" v-else-if="col.types === 'upload'">
+	                        <p class="imgTitle">{{col.label}}</p>
+	                        <div class="img-list">
+	                        		<div v-if="ruleForm[col.value]" class="imgWrapper">
+	                        			<img :src="(/^data/.test(ruleForm[col.value]) ? '': api) + ruleForm[col.value]"/>
+	                        			<span class="deleIcon" @click.stop="deleteImg(col.value,col.ref)"><i class="el-icon-error"></i></span>
+	                        		</div>
+	                        		<i v-else class="el-icon-plus uploadIcon"></i>
+	                        		<input :ref="col.value" type="file" class="inputUpload" accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"  @change="fileChange($event,col.value,col.ref)">
+	                        </div>
+	                    </div>
+					</el-form-item>
+				</el-col>
+				</el-row>
+				<el-row style="text-align:center;margin-top:10px;">
+                    <el-button size="medium" type="primary" @click="submitInfo" :loading="loading">保存</el-button>
+                </el-row>
+			</el-form>
+			<!--弹出框-->
+			<el-dialog title="线路信息" :visible.sync="dialogFormVisible" :before-close="handleClose" center>
+				<div class="table" style="margin-top:0;">
+					<el-table
+					ref="multiple"
+					:data="tableData"
+					tooltip-effect="dark"
+					style="width: 100%"
+					border
+					v-loading="loading"
+					:row-class-name="setlightColor"
+					header-row-class-name="headBgColor"
+					size="small">
+						<template v-for="(column,index) in lineColumn">
+							<el-table-column v-if="column.options" :label="column.label" :fixed="column.fixed" :width="column.width ? column.width:''"
+							:prop="column.value" align="center" :key="column.value">
+								 <template slot-scope="scope">
+								 	<template v-for="col in column.options">
+								 		<el-button :type="col.types" size="mini" @click="col.func(scope.row,scope.$index)">{{col.label}}</el-button>
+								 	</template>
+								 </template>
+							</el-table-column>
+							<el-table-column v-else :show-overflow-tooltip="true" :label="column.label" :fixed="column.fixed" :width="column.width ? column.width:''"
+							:prop="column.value" align="center" :key="column.value"></el-table-column>
+						</template>
+					</el-table>
+				</div>
+			</el-dialog>
+		</div>
+		<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+		<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+		<script type="text/javascript" src="../../lib/vue.js"></script>
+		<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+		<script type="text/javascript" src="../../js/common.js"></script>
+		<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+		<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+		<script type="text/javascript" src="../../api/easy.config.js"></script>
+		<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+		<script type="text/javascript">
+			var pageType = _common.getUrlParam('pagetype'); // 1是新增页，2是编辑页			
+			var app = new Vue({
+				el: '#app',
+				data: function(){
+					var columns = [
+						{
+							types: 'select',
+							label: '车辆类型',
+							placeholder: '请选择车辆类型',
+							value: 'type',
+							options:[
+								{label: '挂车', value:1},
+								{label: '半挂牵引车', value:2},
+								{label: '厢式载货车', value:3},
+								{label: '仓栅式载货车', value:4},
+								{label: '冷藏车', value:5},
+								{label: '栏板式载货车', value:6},
+								{label: '平板运输车', value:7},
+								{label: '牵引车', value:8},
+								{label: '其他', value:9}
+							] 
+						},
+						{
+							types: 'input',
+							label: '车牌号',
+							placeholder: '请输入车牌号',
+							value: 'plateNumber'
+						},
+						{
+							types: 'input',
+							label: '载重（吨）',
+							placeholder: '请输入车辆载重',
+							value: 'weight'
+						},
+						{
+							types: 'input',
+							label: '长度（米）',
+							placeholder: '请输入车辆长度',
+							value: 'length'
+						},
+						{
+							types: 'input',
+							label: '马力',
+							placeholder: '请输入车牌马力',
+							value: 'horsepower'
+						},
+						{
+							types: 'input',
+							label: '体积（方）',
+							placeholder: '请输入荷载体积',
+							value: 'volume'
+						},
+						{
+							types: 'select',
+							label: '车辆所属',
+							placeholder: '请选择车辆所属',
+							value: 'belong',
+							options: [
+								{label: '自有', value:1},
+								{label: '合作', value:2},
+								{label: '租用', value:3},
+								{label: '其他', value:4}
+							]
+						},
+						{
+							types: 'input',
+							label: '运输路线',
+							placeholder: '请选择运输路线',
+							value: 'scope'
+						},
+						{
+							types: 'input',
+							label: '备注',
+							placeholder: '请输入备注',
+							value: 'remarks',
+							inputType: 'textarea',
+							span: 20,
+							rows: 3
+						},
+						{
+							types: 'upload',
+							label: '行驶证',
+							ref: 'drivingLicenseImg',
+							value: 'drivingLicense',
+							span: 8
+						},
+						{
+							types: 'upload',
+							label: '运营证',
+							ref: 'operationPermitImg',
+							value: 'operationPermit',
+							span: 8
+						},
+						{
+							types: 'upload',
+							label: '强制险',
+							ref: 'compulsoryInsuranceImg',
+							value: 'compulsoryInsurance',
+							span: 8
+						},
+						{
+							types: 'upload',
+							label: '保险卡正面',
+							ref: 'insuranceForwardImg',
+							value: 'insuranceForward',
+							span: 8
+						},
+						{
+							types: 'upload',
+							label: '保险卡反面',
+							ref: 'insuranceBackImg',
+							value: 'insuranceBack',
+							span: 8
+						}
+						
+					]
+					var forms = {};
+					if(columns){
+						columns.forEach(item => {
+		                    if (!item.value) return
+		                    if (item.types === 'checkbox') {
+		                        forms[item.value] = []
+		                    } else {
+		                        forms[item.value] = '';
+		                    }
+		                })
+						forms.id = '';
+					}
+					return {
+						api: 'http://images.wlynj.com:8090/',
+						dialogFormVisible: false,
+						subtitle: '新增',
+						loading: false,
+						columns: columns,
+						ruleForm: forms,
+						rules: {
+							type: [{ required: true, message: '请选择车辆类型', trigger: 'change' }],
+							plateNumber: [{required: true, message: '请输入车牌号', trigger: 'blur' }],
+							weight: [{required: true, message: '请输入载重', trigger: 'blur' }],
+							belong: [{required: true, message: '请选择车辆所属', trigger: 'change' }],
+							scope: [{required: true, message: '请选择运输路线', trigger: 'change' }]
+						},
+						lineColumn: [
+							{
+								label: '',
+								width: 80,
+								options: [
+									{
+										label: '选择',
+										types: 'primary',
+										func: this.chooseUp,
+									},
+								]
+							},
+							{label: '线路', value: 'routeName'},
+							{label: '运输范围', value: 'scope'}
+						],
+						tableData: [], //存储线路信息
+						routeId: '', // 路线id
+						lineIndex: '', // 当前线路index
+						imgUrls: {}
+					}
+				},
+				created: function(){
+					if(pageType === '2'){
+						var vehicleInfo = JSON.parse(localStorage.getItem('vehicleInfo'));
+						console.log(vehicleInfo, 'vehicleInfo')
+						this.subtitle = '编辑';
+						this.initForm(vehicleInfo);
+					}
+					this.getLineData(); // 获取运输线路
+				},
+				methods:{
+					getLineData: function(){
+						var _this = this;
+						EasyAjax.ajax_Get_Json({
+							url: 'route/findAll'
+						},function(res){
+							if(res.success === true){
+								_this.tableData = res.list;
+							}
+						})
+					},
+					showDialog: function(field){
+						console.log(field)
+						if(field === 'scope'){
+							this.dialogFormVisible = true;
+						}
+					},
+					handlePreviewImage: function(){},
+					handleDeleteImage: function(){},
+					fileChange: function(e,field,ref){	
+						console.log(e, 'event')
+						var _this = this;
+						var files = e.target.files[0];
+						var imageType = /^image\//;
+						if(!imageType.test(files.type)) {
+							this.$message.error('请选择图片！');
+							return false;
+						}
+                		var reader = new FileReader();
+                		reader.readAsDataURL(files);
+		                // 转base64
+		                reader.onload = function(e) {
+		                	_this.ruleForm[field] = e.target.result // 将图片路径赋值给src
+		                }
+		              
+		                // 将值保存到imgbox中
+		                _this.imgUrls[ref] = files;
+						
+					},
+					// 删除图片
+					deleteImg: function(field,ref){
+						this.ruleForm[field] = '';
+						this.$refs[field][0].value = '';
+						if(this.imgUrls[ref]){
+							delete this.imgUrls[ref];
+						}else{
+							this.imgUrls[ref] = null;
+						}
+						
+					},
+					chooseUp: function(row, idx){
+						this.routeId = row.id;
+						this.lineIndex = idx;
+						this.ruleForm.scope = row.scope;
+						this.dialogFormVisible = false;
+					},
+					// 保存信息
+					saveVehicleInfo: function(url){
+						var _this = this;
+						var formData = new FormData();
+						var noNeed = ['drivingLicenseImg','operationPermitImg','compulsoryInsuranceImg','insuranceForwardImg','insuranceBackImg','id', 'scope'];						
+						if(pageType === '2'){ // 编辑页
+							formData.append("id", this.ruleForm.id);
+						}
+						
+						formData.append("routeId", this.routeId);
+						for(var key in this.ruleForm){
+							if(noNeed.indexOf(key)<0){
+								formData.append(key, this.ruleForm[key]);
+							}
+						}
+						
+						// 保存图片
+						for(var key in this.imgUrls){
+							formData.append(key, this.imgUrls[key]);
+						}
+						$.ajax({
+				        	url: api_host+url,
+				       		type: 'POST',
+				       		dataType: 'json',
+				        	headers:{
+							    "token": api_token	
+							},
+							data: formData,
+				        	processData: false,
+				        	contentType: false, 
+				        	success: function(res){
+				        		if(res.success === true){
+				        			_this.$message.success(res.message);
+				        			if(pageType === '2'){ // 编辑页
+				        				localStorage.setItem('vehicleInfo', '');
+				        			}
+				        			setTimeout(function(){
+			        					window.location.href = './vehicle.html';
+			        				},100);
+				        		}else{
+				        			_this.$message.error(res.message);
+				        		}
+				        	},
+				        	error:function(res){
+				        		_this.$message.error(res.message);
+				        	}
+				    	});
+					},
+					submitInfo: function(){
+						var _this = this;
+						
+						this.$refs.ruleForm.validate(function(valid){
+							if(valid){ //验证通过
+								if(pageType === '1'){ // 新增
+									_this.saveVehicleInfo('vehicle/add');
+								}else{
+									_this.saveVehicleInfo('vehicle/update');
+								}
+							}
+						})
+					},
+					handleClose: function(){
+						this.dialogFormVisible = false;
+					},
+					// 设置选中的表格
+					setlightColor: function({row, rowIndex}){
+						if(rowIndex === this.lineIndex){
+							return 'heightLight'
+						}
+					},
+					// 给form赋值
+			        initForm: function(obj) {
+			        	let _this = this;
+			        	if(obj){
+			        		for (var key in this.ruleForm) {
+				                this.ruleForm[key] = obj[key]
+				            }
+			        	}else{
+			        		for (var key in this.ruleForm) {
+				                this.ruleForm[key] = ''
+				            }
+			        	}
+			            
+			            this.$nextTick(function(){
+			                if (_this.$refs.ruleForm && _this.$refs.ruleForm.clearValidate) {
+			                    _this.$refs.ruleForm.clearValidate()
+			                }
+			            })
+			        },
+			        // 初始化所有数据
+			        initData: function(){
+			        	this.initForm();
+			        	this.lineIndex = '';
+			        	this.routeId = '';
+			        	this.imgUrls = {};
+			        }
+				}
+			})
+		</script>
+	</body>
+</html>

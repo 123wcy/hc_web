@@ -1,0 +1,185 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>用户权限管理系统</title>
+	<link href="../../css/bootstrap.min.css" rel="stylesheet" />
+	<link href="../../css/reset.css" rel="stylesheet" />
+	<link href="../../css/style.css" rel="stylesheet" />
+	<link href="../../css/zheng/admin.css" rel="stylesheet" />
+	<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet" />
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=9ZQIqbGfMnbch4DLAMGk98YwIRgruIpi">
+	</script>
+	<style>
+		[v-cloak] {
+			display: none;
+		}
+
+		#vehicleMap {
+			width: auto;
+			height: 100%;
+			overflow: hidden;
+			margin: 0;
+			font-family: "微软雅黑";
+		}
+
+		.mailInformation {
+			border: solid 1px #ccc;
+			padding: 10px;
+			font-size: 14px;
+		}
+
+		.mailInfo .el-tag {
+			text-align: center;
+			background: none;
+			border: none;
+			width: 100%;
+			font-weight: bold;
+			color: black;
+			font-size: 16px;
+		}
+	</style>
+</head>
+
+<body>
+	<section id="main">
+		<section id="content" class="clearfix">
+			<div id="app" class="col-md-5" v-cloak>
+				<div>
+					<div class="mailInfo">
+						<el-tag>快件信息</el-tag>
+						<div class="mailInformation" id="mailInformation">
+							<template v-if="goodsInfo">
+								<div class="mail-single clearfix">
+	                                <p class="fl">快递单号：<span>{{goodsInfo.expressNumber}}</span></p>
+	                                <p class="fr">快递公司：<span>{{goodsInfo.expressCompany}}</span></p>
+	                            </div>
+	                            <div class="mail-single mt10 clearfix">
+	                                <p class="fl">货物类型：<span>{{goodsInfo.goodsType}}</span></p>
+	                                <p class="fr">货物名称：<span>{{goodsInfo.goodsName}}</span></p>
+	                            </div>
+	                            <div class="mail-single mt10 clearfix">
+	                                <p class="fl">重量：<span>{{goodsInfo.goodsWeight}}kg</span></p>
+	                                <p class="fl ml40">体积：<span>{{goodsInfo.goodsVolume}}m³</span></p>
+	                                <p class="fr">件数：<span>{{goodsInfo.goodsNumber}}</span></p>
+	                            </div>
+	                            <div class="mail-single mt10 clearfix">
+	                                <p class="fl">发货信息：<span>{{goodsInfo.senderAddress}} {{goodsInfo.senderStreet}} {{goodsInfo.senderName}} {{goodsInfo.senderMobilephone}}</span></p>
+	                            </div>
+	                            <div class="mail-single mt10 clearfix">
+	                                <p class="fl">收货信息：<span>{{goodsInfo.recipientAddress}} {{goodsInfo.recipientStreet}} {{goodsInfo.recipientName}} {{goodsInfo.recipientMobilephone}}</span></p>
+	                            </div>
+                            </template>
+                            <template v-else>
+                            	<p style="text-align: center;">暂无快件信息</p>
+                            </template>
+						</div>
+					</div>
+					<div class="mailInfo wl-info mt20">
+						<el-tag>物流信息</el-tag>
+						<div class="mailInformation" id="wlInformation">
+							<template v-if="logisticsInfo">
+							<div class="mail-single mt10 clearfix" v-for="(item,idx) in logisticsInfo" :key="idx">
+								<p class="clearfix"><b class="fl" style="width:150px;">{{item.time}}</b><span
+										class="fl" style="width:350px;">{{item.tab}}</span></p>
+							</div>
+							</template>
+							<template v-else>
+								<p style="text-align: center;">暂无物流信息</p>
+							</template>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="vehicleMap" ref="vehicleMap">
+
+			</div>
+		</section>
+	</section>
+	<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+	<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+	<script type="text/javascript" src="../../lib/vue.js"></script>
+	<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+	<script type="text/javascript" src="../../js/common.js"></script>
+	<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+	<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+	<script type="text/javascript" src="../../api/easy.config.js"></script>
+	<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+	<script type="text/javascript">
+		var expressNum = _common.getUrlParam('expressNumber'); // 获取运单号
+		var app = new Vue({
+			el: '#content',
+			data: {
+				loading: false,
+				expressNumber:expressNum,
+				goodsInfo: null,
+				logisticsInfo: null
+			},
+			mounted: function(){
+				this.initData();
+				this.initData2();				
+			},
+			methods: {
+				initData: function () {
+					var _this = this;
+					EasyAjax.ajax_Post_Json({
+						url: 'transport/findFhDdInfos/'+this.expressNumber,
+					},function(res){
+						if(res.success === true){
+							
+							if(res.data){
+								var record = res.data.record;
+								var polyLine = {
+									startLng: record.startLng, // 经度
+									startLat: record.startLat, // 纬度
+									endLng: record.endLng,
+									endLat: record.endLat
+								}
+								_this.goodsInfo = record;
+								_this.canvasPolyLine(polyLine);
+								
+							}else{
+								_this.canvasPolyLine();
+							}
+						}else{
+							_this.$message.error(res.message);
+						}
+					})
+				},
+				initData2: function () {
+					var _this = this;
+					EasyAjax.ajax_Get_Json({
+						url: 'operation/findAllOperations?expressNumber='+this.expressNumber
+					},function(res){
+						if(res.success === true){
+							_this.logisticsInfo = res.data;
+						}else{
+							_this.$message.error(res.message);
+						}
+					})
+				},
+				canvasPolyLine: function(obj){
+					// 百度地图API功能
+					var map = new BMap.Map(this.$refs.vehicleMap);
+					map.centerAndZoom(new BMap.Point(116.404, 39.915), 15);//参数1：以 ** 为中心 ；参数2：放大级别，数值越大约高
+					map.enableScrollWheelZoom(); //设置 滚轮放大，拖拽
+					
+					if(obj){
+						var polyline = new BMap.Polyline([
+							new BMap.Point(obj.startLng, obj.startLat),
+							new BMap.Point(obj.endLng, obj.endLat),
+						], {strokeColor:"blue", strokeWeight:4, strokeOpacity:0.5});   //创建折线
+						map.addOverlay(polyline);   //增加折线
+					}
+						
+				}
+			}
+		})
+
+	</script>
+</body>
+
+</html>

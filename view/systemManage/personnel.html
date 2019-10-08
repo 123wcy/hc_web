@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>人事管理</title>
+		<link href="../../css/reset.css" rel="stylesheet"/>
+		<link href="../../css/style.css" rel="stylesheet"/>
+		<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet"/>
+		<link href="../../css/zheng/admin.css" rel="stylesheet"/>
+		<link href="../../css/common/sideBar.css" rel="stylesheet"/>
+		<style type="text/css">
+			[v-cloak]{display: none;}
+		</style>
+	</head>
+	<body>
+		<div id="app" class="rightSideBar" v-cloak>
+			<!--查询-->
+			<el-form :inline="true" :model="ruleForm" ref="ruleForm" class="demo-form-inline">
+				<el-form-item v-for="item in searchList" :label="item.label" :prop="item.value" :label-width="item.width?item.width:'80px'" :key="item.value">
+					<!-- 输入框 -->
+	                <el-input v-if="item.types === 'input'" size="small" v-model="ruleForm[item.value]" :placeholder="item.placeholder" clearable @clear="clearData"></el-input>
+			
+	                <!--选择器--> 
+	                <el-select v-else-if="item.types === 'select'" size="small"  v-model="ruleForm[item.value]" :placeholder="item.placeholder" style="width:100%;">
+	                    <el-option v-for="(opt,o) in item.options" :key="o" :label="opt" :value="opt">
+	                    </el-option>
+	                </el-select>
+                </el-form-item>
+				<el-form-item>
+				    <el-button type="primary" size="small" style="margin-left: 20px;" @click="onSubmit">查询</el-button>
+				</el-form-item>
+			</el-form>
+			<!--操作-->
+			<el-row>
+				<el-button type="text" icon="el-icon-circle-plus-outline" @click="handleAdd">新增</el-button>
+				<el-button type="text" icon="el-icon-edit-outline" @click="handleEdit">编辑</el-button>
+				<el-button type="text" icon="el-icon-delete" @click="handleDelete">删除</el-button>
+				<el-button type="text" icon="el-icon-circle-close-outline" @click="handleClose">停用</el-button>
+				<el-button type="text" icon="el-icon-document" @click="handleExport">导出</el-button>				
+			</el-row>
+			<!--表格-->
+			<div class="table">
+				<el-table
+				ref="multipleTable"
+				:data="tableData"
+				tooltip-effect="dark"
+				style="width: 100%"
+				border
+				v-loading="loading"
+				size="small"
+				header-row-class-name="headBgColor"
+				@selection-change="handleSelectionChange">
+					<el-table-column type="selection" width="55" align="center"></el-table-column>
+					<template v-for="(column,index) in columns">
+						<el-table-column v-if="column.options" :label="column.label" :fixed="column.fixed" :width="column.width ? column.width:''"
+						:prop="column.value" align="center" :key="column.value">
+							 <template slot-scope="scope">
+							 	<template v-for="col in column.options">
+							 		<el-button v-if="!col.isHidden(scope.row)" :type="col.types" size="small" @click="col.func(scope.row,scope.$index)">{{col.label}}</el-button>
+							 	</template>
+							 </template>
+						</el-table-column>
+						<el-table-column v-else :show-overflow-tooltip="true" :label="column.label" :fixed="column.fixed" :width="column.width ? column.width:''"
+						:prop="column.value" align="center" :formatter="formatter" :key="column.value"></el-table-column>
+					</template>
+					
+				</el-table>
+				<div class="pageInation">
+					<el-pagination
+				        @size-change="handleSizeChange"
+					    @current-change="handleCurrentChange"
+					    :current-page="currentPage"
+					    :page-sizes="pageSizes"
+					    :page-size="pageSize"
+					    layout="total, sizes, prev, pager, next, jumper"
+					    :total="totalPage">
+				    </el-pagination>
+				</div>				
+			</div>
+
+		</div>
+		<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+		<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+		<script type="text/javascript" src="../../lib/vue.js"></script>
+		<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+		<script type="text/javascript" src="../../js/common.js"></script>
+		<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+		<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+		<script type="text/javascript" src="../../api/easy.config.js"></script>
+		<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+		
+		
+		<script type="text/javascript">
+			//导航			
+			var app = new Vue({
+				el: '#app',
+				data: function(){
+					return {
+						loading: false,
+						multipleSelection: [], // 多选
+						tableData: [],
+						ruleForm: {
+							name: '',
+							employee_id: ''
+						},
+						pageSizes: [10, 20, 30, 50, 100],
+						pageSize: 10,
+						currentPage: 1,
+						totalPage: 1,
+						searchList: [
+							{
+								types: 'input',
+								label: '姓名',
+								placeholder: '请输入员工姓名',
+								value: 'name'
+							},
+							{
+								types: 'input',
+								label: '员工编号',
+								placeholder: '请输入员工编号',
+								value: 'employee_id'
+							}
+						],
+						columns: [
+							{label: '员工编号',value: 'employeeId', fixed:'left'},
+							{label: '姓名',value: 'name', fixed:'left'},
+							{label: '性别',value: 'sex', width: 80},
+							{label: '职务',value: 'position'},
+							{label: '证件号码',value: 'idNumber'},
+							{label: '手机',value: 'phone'},
+							{label: '籍贯',value: 'nativePlace',width: 100},
+							{label: '民族',value: 'nation',width: 80},
+							{label: '政治面貌',value: 'politicsStates',width: 80},
+							{label: '婚姻状况',value: 'maritalStates',width: 80},
+							{label: '居住地址',value: 'address'},
+							{label: '状态',value: 'positionStates', width: 80},
+							{
+								label: '操作',
+								value: 'flag',
+								fixed: 'right',
+								width: 100,
+								options: [
+									{
+										label: '停用',
+										func: this.handleStop,
+										types:'primary',
+										isHidden: function(row){
+											return row.flag === 1
+										}
+									},
+									{
+										label: '启用',
+										func: this.handleStart,
+										types: 'danger',
+										isHidden: function(row){
+											return row.flag === 2
+										}
+									}
+								]
+							}
+						]
+					}
+				},
+				computed: {
+					handleId: function(){
+						var id = [];
+						if(this.multipleSelection.length > 0){
+							this.multipleSelection.forEach(function(item){
+								id.push(item.id)
+							})
+						}
+						return id;
+					}
+				},
+				created: function(){
+					this.getData();
+				},
+				methods:{
+					// 查询接口
+					getData: function(){
+						var _this = this;
+						this.loading = true;
+						var data = {
+							name: this.ruleForm.name,
+							employee_id: this.ruleForm.employee_id,
+							pageSize: this.pageSize, // 每页显示条数
+							pageNum: this.currentPage // 当前页数
+						}
+						EasyAjax.ajax_Post_Json({
+							url: 'user/queryUser',
+							data: JSON.stringify(data)
+						},function(res){
+							_this.loading = false;
+							if(res.success === true){
+								_this.tableData = res.data.list;
+								_this.totalPage = res.data.total;
+							}
+						})
+					},
+					// 查询按钮
+					onSubmit: function(){
+						this.currentPage = 1;
+						this.getData();
+					},
+					// 新增
+					handleAdd: function(){
+						window.location.href="./personHandle.html?pagetype=1";
+					},
+					// 编辑
+					handleEdit: function(){
+						if(this.multipleSelection.length === 0){
+							this.$message.error('请先勾选编辑列表');
+							return false;
+						}
+						
+						if(this.multipleSelection.length > 1){
+							this.$message.error('只能同时编辑一个员工信息');
+							return false;
+						}
+						var employeeInfo = JSON.stringify(this.multipleSelection[0]);
+						localStorage.setItem('employeeInfo', employeeInfo)
+						window.location.href="./personHandle.html?pagetype=2";
+					},
+					// 删除
+					handleDelete: function(){
+						var _this = this;
+						if(this.multipleSelection.length === 0){
+							this.$message.error('请先勾选需要删除的列表');
+							return false;
+						}
+						this.$confirm('是否确定删除?', '提示', {
+				          confirmButtonText: '确定',
+				          cancelButtonText: '取消',
+				          type: 'warning'
+				        }).then(function(){
+				          	EasyAjax.ajax_Post_Json({
+								url: 'user/deleteUser',
+								data: JSON.stringify(_this.handleId)
+							},function(res){
+								if(res.success === true){
+									_this.getData();
+									_this.$message.success(res.message);
+								}
+							})
+				        });
+					},
+					// 批量停用
+					handleClose: function(){
+						var _this = this;
+						if(this.multipleSelection.length === 0){
+							this.$message.error('请先勾选需要停用的列表');
+							return false;
+						}
+						this.$confirm('是否确定停用?', '提示', {
+				          confirmButtonText: '确定',
+				          cancelButtonText: '取消',
+				          type: 'warning'
+				        }).then(function(){
+				        	_this.handleToggle(_this.handleId,1);
+				        });
+					},
+					// 导出
+					handleExport: function(){
+						console.log('导出')
+						var _this = this;
+						var ids = this.handleId.join(',') || 0;
+						var url = api_host+'user/exportUser/'+ids;
+						window.location.href= url;
+					},
+					handleSelectionChange: function(val){
+						this.multipleSelection = val;
+					},
+					// 停用
+					handleStop: function(row, index){
+						console.log('停用')
+						var id = [row.id]
+						this.handleToggle(id, 1)
+					},
+					// 启用
+					handleStart: function(row, index){
+						console.log('启用')
+						var id = [row.id]
+						this.handleToggle(id, 2)
+						
+					},
+					handleToggle: function(id, flag){
+						var _this = this;
+						var data = {
+							ids: id,
+							flag: flag
+						}
+						EasyAjax.ajax_Post_Json({
+							url: 'user/changeFlag',
+							data: JSON.stringify(data)
+						},function(res){
+							if(res.success === true){
+								var text = flag === 2 ? '启用成功': '停用成功';
+								_this.getData();
+								_this.$message.success(text);
+							}
+						})
+					},
+					// 切换每页显示条数
+					handleSizeChange: function(val){
+						this.pageSize = val;
+						this.getData();
+					},
+					// 切换当前页
+					handleCurrentChange: function(val){
+						this.currentPage = val;
+						this.getData();
+					},
+					//清空input值
+					clearData(){
+						console.log('clear');
+						this.onSubmit();
+					},
+					// 处理表格数据
+					formatter(row, column, cellValue, index){
+						if(column.label === '状态'){ //职务
+							return row.positionStates === 0 ? '试用': '正式工'
+						}else if(column.label === '政治面貌'){ //政治面貌
+							var politicsStates = '';
+							switch(row.politicsStates){
+								case 0:
+									politicsStates = '群众'
+									break;
+								case 1:
+									politicsStates = '团员'
+									break;
+								case 2:
+									politicsStates = '党员'
+									break;
+								case 3:
+									politicsStates = '其他'
+									break;
+							}
+							return politicsStates;
+						}else if(column.label === '婚姻状况'){
+							var maritalStates = '';
+							switch(row.maritalStates){
+								case 0:
+									maritalStates = '未婚'
+									break;
+								case 1:
+									maritalStates = '已婚'
+									break;
+								case 2:
+									maritalStates = '离异'
+									break;
+								case 3:
+									maritalStates = '其他'
+									break;
+							}
+							return maritalStates;
+						}else{
+							return cellValue;
+						}
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

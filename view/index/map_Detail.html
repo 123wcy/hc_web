@@ -1,0 +1,86 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>用户权限管理系统</title>
+    <script src="../../lib/jquery.1.11.3.min.js"></script>
+    <script src="../../lib/vue.js"></script>
+    <script src="../../lib/axios.js"></script>
+    <script src="../../lib/elementui/index.js"></script>
+    <script src="../../js/common.js"></script>
+    <link href="../../css/bootstrap.min.css" rel="stylesheet" />
+    <link href="../../css/reset.css" rel="stylesheet" />
+    <link href="../../css/style.css" rel="stylesheet" />
+    <link href="../../css/zheng/admin.css" rel="stylesheet" />
+    <link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet" />
+    <script src="../../js/wang/js.cookie.min.js"></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=9ZQIqbGfMnbch4DLAMGk98YwIRgruIpi">
+    </script>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+
+        #vehicleMap {
+            width: auto;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+            font-family: "微软雅黑";
+        }
+
+        .mailInformation {
+            border: solid 1px #ccc;
+            padding: 10px;
+            font-size: 14px;
+
+        }
+
+        .mailInfo .el-tag {
+            text-align: center;
+            background: none;
+            border: none;
+            width: 100%;
+            font-weight: bold;
+            color: black;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+<section id="main">
+    <section id="content" class="clearfix">
+        <div id="app" class="col-md-5" v-cloak>
+            <div>
+                <div class="mailInfo">
+                    <el-tag>快件信息</el-tag>
+                    <div class="mailInformation" id="mailInformation">
+
+                    </div>
+                </div>
+                <div class="mailInfo wl-info mt20">
+                    <el-tag>物流信息</el-tag>
+                    <div class="mailInformation" id="wlInformation" style=" height: 400px;
+            overflow-y:scroll;">
+                        <div class="mail-single mt10 clearfix">
+                            <p class="clearfix"><b class="fl" style="width:150px;">2019-05-10 12:39:52</b><span
+                                    class="fl" style="width:350px;">广西省南宁市XX县 人民路100号 李四 189090999001</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="vehicleMap">
+
+        </div>
+    </section>
+</section>
+<script src="../../js/wang/utils.js"></script>
+<script src="../../js/wang/map_detail.js"></script>
+</body>
+
+</html>

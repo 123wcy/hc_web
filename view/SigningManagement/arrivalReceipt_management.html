@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>到货签收管理</title>
+
+    <!-- jquery -->
+    <script src="../../lib/jquery.1.11.3.min.js"></script>
+    <script src="../../lib/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../../lib/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+
+    <!--vue axios-->
+    <script src="../../lib/vue.js"></script>
+    <script src="../../lib/axios.js"></script>
+    <script src="../../lib/elementui/index.js"></script>
+    <link rel="stylesheet" href="../../lib/elementui/theme-chalk/index.css">
+    <script src="../../js/wang/js.cookie.min.js"></script>
+
+
+    <!--样式-->
+    <link rel="stylesheet" href="../../css/common.css">
+    <link rel="stylesheet" href="../../css/wang/wcommon.css">
+    <link rel="stylesheet" href="../../css/wang/font.css">
+
+</head>
+<body>
+<div id="app" v-cloak>
+
+    <div class="nav-right">
+
+        <!--查询-->
+        <el-form :inline="true"   class="demo-form-inline" ref="select">
+            <el-form-item v-for="item in searchListAll" :label="item.label" :prop="item.value" :label-width="item.width?item.width:'80px'" :key="item.value">
+                <!-- 输入框 -->
+                <el-input v-if="item.types === 'input'" size="small" v-model="searchList[item.value]" :placeholder="item.placeholder" clearable></el-input>
+
+                <!--选择器-->
+                <el-select v-else-if="item.types === 'select'" size="small"  v-model="searchList[item.value]" style="width:100%;">
+                    <el-option v-for="(opt,o) in item.options" :key="o" :label="opt.label" :value="opt.value">
+                    </el-option>
+                </el-select>
+
+                <!--时间选择器-->
+                <el-date-picker  v-else-if="item.types === 'datepicker'" v-model="dateTime"
+                                 type="datetimerange"
+                                 :picker-options="pickerOptions2"
+                                 range-separator="至"
+                                 start-placeholder="开始日期"
+                                 end-placeholder="结束日期">
+                </el-date-picker>
+
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" size="small" style="margin-left: 20px;" @click="searchBtn">查询</el-button>
+                <el-button type="primary" size="small" style="margin-left: 20px;" @click="reset">重置</el-button>
+            </el-form-item>
+        </el-form>
+
+
+
+
+        <div class="click-box">
+        <div class="floatleft">
+            <el-button @click.prevent="Signing" class="iconfont icon-zitidingdan" size="small">签收</el-button>
+        </div>
+        <div class="table-box">
+
+
+            <div class="table-content-box" style="margin-top: 40px;text-overflow: ellipsis;white-space: nowrap;overflow-x: scroll;">
+                <div>
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr class="table-th">
+                            <th width="6%"><input type="checkbox" v-model="allcheckbox" @change="allCheck"></th>
+                            <th>快递名称</th>
+                            <th>单号</th>
+                            <th>收件人姓名</th>
+                            <th>收件人手机</th>
+                            <th>收件地址</th>
+
+                            <th>派件网点</th>
+                            <th>派件人</th>
+                            <th>签收状态</th>
+                            <th>签收时间</th>
+                            <th>操作</th>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-if='findTransportFhList.length==0'><td colspan='12'>没有找到匹配的记录</td></tr>
+                        <tr v-for="(item, index) in findTransportFhList" :key="item.id" :value="index" v-cloak>
+                            <td><input type="checkbox" v-model="item.checked" @change="singleCheck(item)"></td>
+                            <td>{{item.expressCompany}}</td>
+                            <td :class="item.unusual? 'abnormal':''">
+                                <img v-if="item.unusual" class="red" src="../../img/abnormal.png">
+                                <span>
+                                    <a style="cursor: pointer;" @click=TransportDetail(item.expressNumber,item.flag)>{{item.expressNumber}}</a>&nbsp;
+                                </span>
+                            </td>
+                            <td>{{item.recipientName}}</td>
+                            <td>{{item.recipientMobilephone}}</td>
+                            <td>{{item.recipientAddress}}</td>
+
+                            <td>{{item.sendSite}}</td>
+                            <td>{{item.sendUser}}</td>
+                            <td>{{item.signStates}}</td>
+                            <td>{{item.signTime}}</td>
+                            <td>
+                                 <span>
+                                    <a style="cursor: pointer;" @click=SigningDetails(item.expressNumber)>签收详情</a>&nbsp;
+                                </span>
+                            </td>
+
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+            <div class="pagination-box">
+                <el-pagination
+                        @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"
+                        :current-page="page"
+                        :page-sizes="[10, 20, 30, 40]"
+                        :page-size="pageSize"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="total">
+                </el-pagination>
+            </div>
+
+        </div>
+        </div>
+
+
+        <el-dialog title="签收" :visible.sync="Signingdialog" center style="font-weight: bolder;font-size: 24px;">
+
+            <el-form :model="form">
+                <el-row>
+                    <el-col :span="10">
+
+                        <el-form-item label="收件人 :" :label-width="formLabelWidth">
+                            <el-input v-model="recipientName" autocomplete="off" readonly></el-input>
+                        </el-form-item>
+
+                    </el-col>
+                    <el-col :span="10">
+                        <el-form-item label="签收人 :" :label-width="formLabelWidth">
+                            <el-input v-model="form.name" autocomplete="off" clearable></el-input>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-form-item label="签收图片 :" :label-width="formLabelWidth">
+                    <el-upload
+                            ref="upload"
+                            action="a"
+                            :limit="3"
+                            :file-list="ruleFormListQ"
+                            list-type="picture-card"
+                            :on-preview="handlePictureCardPreview"
+                            :on-remove="handleRemove"
+                            :on-success="onSuccss"
+                            :on-error="onError"
+                            :on-progress="onProgress"
+                            :before-upload="beforeAvatarUpload"
+                            :auto-upload="false"
+                            :http-request="UploadImage"
+                            :on-exceed="handleExceed"
+
+                    >
+                        <i class="el-icon-plus"></i>
+                    </el-upload>
+                    <el-dialog :visible.sync="dialogImg">
+                        <img width="100%" :src="dialogImageUrl" alt="">
+                    </el-dialog>
+                </el-form-item>
+            </el-form>
+
+
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="cancel">取 消</el-button>
+                <el-button type="primary" @click="sub">确 定</el-button>
+            </div>
+        </el-dialog>
+
+
+        <el-dialog title="签收详情" :visible.sync="SigningDetail" center style="font-weight: bolder;font-size: 24px;">
+
+            <el-form :model="form" v-for="(item,index) in signing">
+
+                    <el-row  >
+                        <el-col :span="10">
+                            <el-form-item label="签收人 :" :label-width="formLabelWidth">
+                                <span>{{item.name}}</span>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="10">
+                            <el-form-item label="签收时间 :" :label-width="formLabelWidth">
+                                <span>{{item.createtime}}</span>
+                            </el-form-item>
+
+                        </el-col>
+                    </el-row>
+
+                <el-form-item label="签收图片 :" :label-width="formLabelWidth">
+
+
+                    <el-upload
+                            ref="upload"
+                            action="a"
+                            :limit="3"
+                            :file-list="path"
+                            list-type="picture-card"
+                            :on-preview="handlePictureCardPreview"
+                            :on-remove="handleRemove"
+                            :on-success="onSuccss"
+                            :on-error="onError"
+                            :on-progress="onProgress"
+                            :before-upload="beforeAvatarUpload"
+                            :auto-upload="false"
+                            :http-request="UploadImage"
+                            :on-exceed="handleExceed"
+
+                    >
+                        <i class="el-icon-plus"></i>
+                    </el-upload>
+                    <el-dialog :visible.sync="dialogImg">
+                        <img width="100%" :src="dialogImageUrl" alt="">
+                    </el-dialog>
+                </el-form-item>
+            </el-form>
+
+
+            <div slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="subs">确 定</el-button>
+            </div>
+        </el-dialog>
+    </div>
+</div>
+</body>
+</html>
+<style>
+    .abnormal{
+        position: relative;
+    }
+    .red{
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        top: -1px;
+        left: -1px;
+    }
+    .table-box{
+        margin-top: 0px;
+    }
+
+</style>
+
+<script src="../../js/wang/utils.js"></script>
+
+<script src="../../js/wang/ArrivalReceiptManagement.js"></script>
+

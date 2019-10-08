@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>系统菜单</title>
+		<link href="../../css/reset.css" rel="stylesheet"/>
+		<link href="../../css/style.css" rel="stylesheet"/>
+		<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet"/>
+		<link href="../../css/zheng/admin.css" rel="stylesheet"/>
+		<link href="../../css/common/sideBar.css" rel="stylesheet"/>
+		<style type="text/css">
+			[v-cloak] {display: none;}
+			.custom-tree-node {
+				flex: 1;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				font-size: 14px;
+				padding-right: 8px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="app" class="rightSideBar" v-cloak>
+			<el-row style="margin-bottom: 15px;">
+				<el-button type="text" icon="el-icon-circle-plus-outline" @click="handleAdd">新增</el-button>	
+			</el-row>
+			<div class="custom-tree-container">
+				<el-tree ref="tree" :data="menuData" :props="defaultProps" node-key="id" default-expand-all :expand-on-click-node="false">
+					<span class="custom-tree-node" slot-scope="{ node, data }">
+        				<span>{{ node.label }}</span>
+						<span>
+				          	<!--<el-button type="text" size="mini" @click="() => append(data)"> 新增</el-button>-->
+				          	<el-button type="text" size="mini" @click="() => edit(node, data)">编辑</el-button>
+				          	<el-button type="text" size="mini" @click="() => remove(node, data)">删除</el-button>
+				        </span>
+					</span>
+				</el-tree>
+			</div>
+
+			<!--新增弹出框-->
+			<el-dialog :title="title" :visible.sync="dialogFormVisible" :before-close="formClose" center>
+				<el-form :model="ruleForm" :rules="rules" ref="ruleForm" class="demo-form-inline">
+					<el-col v-for="item in searchList" :span="item.span?item.span: 12" :key="item.value">
+						<el-form-item v-if="!item.hidden" :label="item.label" :prop="item.value" :label-width="item.width?item.width:'100px'">
+							<!-- 输入框 -->
+							<el-input v-if="item.types === 'input'" :type="item.otherType?item.otherType: 'text'" size="small" v-model="ruleForm[item.value]" :placeholder="item.placeholder" :disabled="item.disabled"></el-input>
+
+							<!--选择器-->
+							<el-select v-else-if="item.types === 'select'" size="small" v-model="ruleForm[item.value]" :placeholder="item.placeholder" style="width:100%;" :disabled="item.disabled">
+								<el-option v-for="(opt,o) in item.options" :key="o" :label="opt.label" :value="opt.value">
+								</el-option>
+							</el-select>
+							
+							<!--级联菜单-->
+							<el-cascader v-else-if="item.types === 'cascader'" size="small" v-model="ruleForm[item.value]" :placeholder="item.placeholder" style="width: 100%;"
+						    :options="item.options" :props="cascaderProps" change-on-select @change="handleChange">
+						  </el-cascader>
+							
+						</el-form-item>
+					</el-col>
+				</el-form>
+				<div slot="footer" class="dialog-footer">
+					<el-button type="primary" @click="saveMsg">保存</el-button>
+				</div>
+			</el-dialog>
+		</div>
+		<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+		<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+		<script type="text/javascript" src="../../lib/vue.js"></script>
+		<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+		<script type="text/javascript" src="../../js/common.js"></script>
+		<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+		<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+		<script type="text/javascript" src="../../api/easy.config.js"></script>
+		<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+
+		<script type="text/javascript">
+			var app = new Vue({
+				el: '#app',
+				data() {
+					var searchList = [
+						{
+							types:'cascader',
+							label: '上级菜单',
+							value: 'parentMenu',
+							placeholder: '请选择上级菜单',
+							options: [],
+							span: 24,
+							hidden: false
+							
+						},
+						{
+							types:'input',
+							label: '菜单名称',
+							value: 'menuName',
+							placeholder: '请输入菜单名称'
+						},
+						{
+							types: 'input',
+							label: '路径',
+							value: 'path',
+							placeholder: '请输入路径'
+						},
+						{
+							types: 'input',
+							label: '排序',
+							value: 'sort',
+							placeholder: '请输入排序'
+						},
+						{
+							types: 'select',
+							label: '权限级别',
+							value: 'permissionLevels',
+							placeholder: '请选择权限级别',
+							options: [{
+									label: '普通账户级别',
+									value: 0
+								},
+								{
+									label: '超级账户级别',
+									value: 1
+								}
+							]
+						},
+						{
+							types: 'input',
+							otherType: 'textarea',
+							label: '描述',
+							value: 'descrtption',
+							placeholder: '请输入描述',
+							span: 24
+						}
+					]
+					var forms = {};
+					if(searchList) {
+						searchList.forEach(item => {
+							if(!item.value) return
+							if(item.types === 'cascader') {
+								forms[item.value] = []
+							} else {
+								forms[item.value] = '';
+							}
+						})
+						forms.id = '';
+					}
+					return {
+						menuData: null,
+						title: '',
+						dialogFormVisible: false, // 控制弹出框
+						searchList: searchList,
+						ruleForm: forms,
+						rules: {
+							parentMenu: [{
+								required: true,
+								message: '请选择上级菜单',
+								trigger: 'change'
+							}],
+							menuName: [{
+								required: true,
+								message: '请输入菜单名称',
+								trigger: 'blur'
+							}],
+							path: [{
+								required: true,
+								message: '请输入路径',
+								trigger: 'blur'
+							}],
+							sort: [{
+								required: true,
+								message: '请输入排序',
+								trigger: 'blur'
+							}],
+							permissionLevels: [{
+								required: true,
+								message: '请输入权限级别',
+								trigger: 'change'
+							}]
+						},
+						defaultProps: {
+							children: 'child',
+          					label: 'menuName'
+						},
+						cascaderProps: {
+							children: 'child',
+          					label: 'menuName',
+          					value: 'id'
+						},
+						parentsId: [] // 父级id集合
+					}
+				},
+				created: function(){
+					this.getData();
+				},
+				methods: {
+					getData: function(){
+						var _this = this;
+						EasyAjax.ajax_Post_Json({
+							url: 'menu/findMenu'
+						},function(res){
+							if(res.success === true){
+								_this.menuData = res.data;
+								_this.searchList[0].options = _this.getTreeData(res.data);
+							}
+						})
+						
+					},
+					handleChange: function(value){
+						console.log(value, 'value');
+					},
+					// 新增菜单
+					handleAdd: function(){
+						this.title = '新增'
+						this.dialogFormVisible = true;
+						this.searchList[0].hidden = false; // 显示上级菜单
+						// this.searchList[2].disabled = false; // 路径可编辑
+						this.initForm();
+					},
+					edit: function(node, data) {
+						this.parentsId = [];
+						this.concatMenuId(node);
+						this.title = '编辑'
+						if(data.parentMenu === 0) this.searchList[0].hidden = true;
+						// this.searchList[2].disabled = true; // 路径不可编辑
+						// 处理parentMenu
+						var newData = Object.assign({}, data);
+						newData.parentMenu = this.parentsId;
+						this.initForm(newData);
+						this.dialogFormVisible = true;
+					},
+					remove: function(node, data) {
+						var _this = this;
+						this.$confirm('是否确定删除当前菜单?', '提示', {
+							confirmButtonText: '确定',
+							cancelButtonText: '取消',
+							type: 'warning'
+						}).then(function(){
+							_this.deleteMenu(data.id);
+						}).catch(function(){
+							// 取消删除
+						});
+					},
+					// 关闭弹出框
+					formClose: function(){
+						this.dialogFormVisible = false;
+					},
+					
+					// 保存
+					saveMsg: function(){
+						var _this = this;
+						this.$refs.ruleForm.validate(function(valid){
+							if(valid){ //验证通过
+								if(_this.title === '新增'){ 
+									_this.saveInfo('menu/addMenu')
+								}else{ // 编辑
+									_this.saveInfo('menu/updMenu')
+								}
+							}
+						})
+					},
+					// 新增、编辑
+					saveInfo:function(url){
+						var _this = this;
+						var parentMenu = this.ruleForm.parentMenu[this.ruleForm.parentMenu.length - 1] || 0;
+						var data = {
+							id: this.ruleForm.id, // 当前菜单的id
+							menuName: this.ruleForm.menuName,
+							parentMenu: parentMenu, //父级的菜单id
+							path: this.ruleForm.path,
+							sort: this.ruleForm.sort,
+							permissionLevels: this.ruleForm.permissionLevels,
+							descrtption: this.ruleForm.descrtption,
+						}
+						if(this.title === '新增') delete data.id;
+						
+						EasyAjax.ajax_Post_Json({
+							url: url,
+							data: JSON.stringify(data)
+						},function(res){
+							if(res.success === true){
+								_this.dialogFormVisible = false;
+								_this.getData();
+								_this.$message.success(res.message);
+							}
+						})
+					},
+					//删除
+					deleteMenu: function(id){
+						var _this = this;
+						var data = {
+							id: id
+						}				
+						EasyAjax.ajax_Post_Json({
+							url: 'menu/deleteMenu',
+							data: JSON.stringify(data)
+						},function(res){
+							if(res.success === true){
+								_this.getData();
+								_this.$message.success(res.message);
+							}
+						})
+					},
+					//初始化form
+					initForm: function(obj){
+						var _this = this;
+						if(obj){
+							for(var key in this.ruleForm){
+								this.ruleForm[key] = obj[key]
+							}
+						}else{
+							for(var key in this.ruleForm){
+								if(key === 'parentMenu'){
+									this.ruleForm[key] = []
+								}else{
+									this.ruleForm[key] = ''
+								}
+								
+							}
+						}
+						this.$nextTick(function(){
+			                if (_this.$refs.ruleForm && _this.$refs.ruleForm.clearValidate) {
+			                    _this.$refs.ruleForm.clearValidate()
+			                }
+			            })
+						
+					},
+					getTreeData: function(data){
+		                // 循环遍历json数据
+		                for(var i=0; i < data.length; i++){
+		                	if(data[i].child){
+		                		if(data[i].child.length<1){
+			                        data[i].child = null;
+			                    }else{
+			                        this.getTreeData(data[i].child);
+			                    }
+		                	}
+		                    
+		                }
+		                return data;
+		            },
+		            // 获取父辈id集合
+		            concatMenuId: function(nodes){
+		            	if(nodes.level > 1){
+		            		console.log(nodes.level, 'level')
+		            		this.parentsId.unshift(nodes.parent.data.id);
+		            		this.concatMenuId(nodes.parent);
+		            	}
+		            }
+				}
+			})
+		</script>
+	</body>
+
+</html>

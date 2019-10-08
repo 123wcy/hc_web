@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>发货库</title>
+
+    <!-- jquery -->
+    <script src="../../lib/jquery.1.11.3.min.js"></script>
+    <script src="../../lib/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../../lib/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+
+    <!--vue axios-->
+    <script src="../../lib/vue.js"></script>
+    <script src="../../lib/axios.js"></script>
+    <script src="../../lib/elementui/index.js"></script>
+    <link rel="stylesheet" href="../../lib/elementui/theme-chalk/index.css">
+    <script src="../../js/wang/js.cookie.min.js"></script>
+
+
+    <!--样式-->
+    <link rel="stylesheet" href="../../css/common.css">
+    <link rel="stylesheet" href="../../css/wang/wcommon.css">
+    <link rel="stylesheet" href="../../css/wang/font.css">
+    <link rel="stylesheet" href="../../css/wang/warehouse_send.css">
+
+
+
+</head>
+<body>
+<div id="app" v-cloak>
+
+    <div class="nav-right">
+
+        <!--查询-->
+        <el-form :inline="true"   class="demo-form-inline" ref="select">
+            <el-form-item v-for="item in searchListAll" :label="item.label" :prop="item.value" :label-width="item.width?item.width:'100px'" :key="item.value">
+                <!-- 输入框 -->
+                <el-input v-if="item.types === 'input'" size="small" v-model="searchListS[item.value]" :placeholder="item.placeholder" clearable></el-input>
+
+                <!--选择器-->
+                <el-select v-else-if="item.types === 'select'" size="small"  v-model="searchListS[item.value]" style="width:100%;">
+                    <el-option v-for="(opt,o) in item.options" :key="o" :label="opt.label" :value="opt.value">
+                    </el-option>
+                </el-select>
+
+                <!--时间选择器-->
+                <el-date-picker  v-else-if="item.types === 'datepicker'" v-model="dateTimes"
+                                 type="datetimerange"
+                                 :picker-options="pickerOptions2"
+                                 range-separator="至"
+                                 start-placeholder="开始日期"
+                                 end-placeholder="结束日期">
+                </el-date-picker>
+
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" size="small" style="margin-left: 20px;" @click="searchBtnSend">查询</el-button>
+                <el-button type="primary" size="small" style="margin-left: 20px;" @click="reset">重置</el-button>
+            </el-form-item>
+        </el-form>
+
+
+
+        <div class="click-box">
+            <el-tabs type="card" v-model="activeName" @tab-click="handleClick">
+                <el-tab-pane label="待揽收"  name="first">
+                    <div class="table-box">
+                        <div class="table-content-box"  style="margin-top: 80px;text-overflow: ellipsis;white-space: nowrap;overflow-x: scroll;">
+                            <div>
+                                <table class="table table-bordered">
+                                    <thead>
+                                    <tr class="table-th">
+                                        <th width="6%"><input class="el-checkbox__inner" type="checkbox" v-model="allcheckbox" @change="allCheck(1)"></th>
+                                        <th>快递名称</th>
+                                        <th>快递单号</th>
+                                        <th>件数(件)</th>
+                                        <th>发件人姓名</th>
+                                        <th>发件人手机</th>
+                                        <th>发件地址</th>
+                                        <th>收件人姓名</th>
+                                        <th>收件人手机</th>
+                                        <th>收件地址</th>
+                                        <th>下单时间</th>
+
+                                        <th>操作</th><!--新增-->
+
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="(item, index) in sendList" :key="item.id" :value="index" v-cloak>
+                                        <td><input type="checkbox" v-model="item.checked" @change="singleCheck(item,1)"></td>
+                                        <td>{{item.expressCompany}}</td>
+                                        <td :class="item.unusual? 'abnormal':''">
+                                            <img v-if="item.unusual" class="red" src="../../img/abnormal.png">
+                                            <span>{{item.expressNumber}}</span>
+                                        </td>
+                                        <td>{{item.goodsNumber}}</td>
+                                        <td>{{item.senderName}}</td>
+                                        <td>{{item.senderMobilephone}}</td>
+                                        <td>{{item.senderAddress}}</td>
+
+                                        <td>{{item.recipientName}}</td>
+                                        <td>{{item.recipientMobilephone}}</td>
+                                        <td>{{item.recipientAddress}}</td>
+
+                                        <td>{{item.createtime}}</td>
+                                        <td>
+                                            <el-button  type="text" @click.prevent="cancelAll('cancelExpress',item.expressNumber)">取消</el-button>
+                                            <el-button  type="text" style="margin-left: 20px;" @click.prevent="Condition(item.expressNumber)">揽收</el-button>
+                                        </td>
+                                    </tr>
+                                    <tr v-if='sendList.length==0'><td colspan='13'>没有找到匹配的记录</td></tr>
+
+                                    </tbody>
+                                </table>
+
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </el-tab-pane>
+
+                <el-tab-pane label="待入库"  name="second">
+
+
+                    <div class="floatleft">
+                        <el-button type="warning" @click.prevent="Abnormal" class="iconfont icon-yichang"  size="small">异常</el-button>
+                        <el-button type="primary" @click.prevent="Storage" class="iconfont icon-ruku"  size="small">入库</el-button>
+                        <el-button @click.prevent="Unloading(1)" class="iconfont icon-ccgl-yundansaomiao-1" size="small">卸车扫描</el-button>
+                    </div>
+
+
+                    <div class="table-box">
+                        <div class="table-content-box"  style="margin-top: 40px;text-overflow: ellipsis;white-space: nowrap;overflow-x: scroll;">
+                            <div>
+
+                                <table class="table table-bordered">
+                                    <thead>
+                                    <tr class="table-th">
+                                        <th width="6%"><input class="el-checkbox__inner" type="checkbox" v-model="allcheckbox" @change="allCheck(1)"></th>
+                                        <th>快递名称</th>
+                                        <th>快递单号</th>
+                                        <th>件数(件)</th>
+                                        <th>发件人姓名</th>
+                                        <th>发件人手机</th>
+                                        <th>发件地址</th>
+                                        <th>收件人姓名</th>
+                                        <th>收件人手机</th>
+                                        <th>收件地址</th>
+
+                                        <th>揽件人/网点</th>
+                                        <th>揽收/发车时间</th>
+                                        <th>车牌号</th>
+                                        <th>操作</th><!--新增-->
+
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="(item, index) in sendList" :key="item.id" :value="index" v-cloak>
+                                        <td><input type="checkbox" v-model="item.checked" @change="singleCheck(item,1)"></td>
+                                        <td>{{item.expressCompany}}</td>
+                                        <td :class="item.unusual? 'abnormal':''">
+                                            <img v-if="item.unusual" class="red" src="../../img/abnormal.png">
+                                            <span>
+                                    <a style="cursor: pointer;" @click=TransportDetail(item.expressNumber)>{{item.expressNumber}}</a>&nbsp;
+                                </span>
+                                        </td>
+                                        <td>{{item.goodsNumber}}</td>
+                                        <td>{{item.senderName}}</td>
+                                        <td>{{item.senderMobilephone}}</td>
+                                        <td>{{item.senderAddress}}</td>
+                                        <td>{{item.recipientName}}</td>
+                                        <td>{{item.recipientMobilephone}}</td>
+                                        <td>{{item.recipientAddress}}</td>
+
+                                        <td>{{item.name}}</td>
+                                        <td>{{item.startTime}}</td><!--疑问-->
+                                        <td>{{item.plateNumber}}</td>
+
+                                        <td>
+                                            <el-button  type="text" @click.prevent="cancelAll('cancelExpress',item.expressNumber)">取消</el-button>
+                                            <el-button  type="text" style="margin-left: 20px;" @click.prevent="Abnormall(item)">异常</el-button>
+                                            <el-button  type="text" style="margin-left: 20px;" @click.prevent="Storage(item)">入库</el-button>
+                                        </td>
+
+
+
+                                    </tr>
+                                    <tr v-if='sendList.length==0'><td colspan='14'>没有找到匹配的记录</td></tr>
+
+                                    </tbody>
+                                </table>
+
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </el-tab-pane>
+
+                <el-tab-pane label="已入库" name="third">
+
+                    <div class="floatleft">
+                        <!--<el-button type="success" @click.prevent="Pack" class="iconfont icon-jichengdabao"  size="small">打包</el-button>-->
+                        <!--<el-button type="danger" @click.prevent="Return" class="iconfont icon-tuihuichuli"  size="small">退回</el-button>-->
+                        <el-button type="warning" @click.prevent="Abnormal" class="iconfont icon-yichang"  size="small">异常</el-button>
+
+                        <el-button @click.prevent="ExtraRelivery" class="iconfont icon-songhuo"  size="small">额外派送</el-button>
+                        <el-button @click.prevent="Dispatch" class="iconfont icon---wodegongkuan-paijian"  size="small">分派</el-button>
+                        <el-button @click.prevent="Loading(0)" class="iconfont icon-zhuangche"  size="small">装车</el-button>
+                        <el-button @click.prevent="Signing" class="iconfont icon-zitidingdan" size="small">自提</el-button>
+                    </div>
+                    <div class="table-box">
+                        <div class="table-content-box"  style="margin-top: 40px;text-overflow: ellipsis;white-space: nowrap;overflow-x: scroll;">
+                            <div>
+
+                                <table class="table table-bordered">
+                                    <thead>
+                                    <tr class="table-th">
+                                        <th width="6%"><input class="el-checkbox__inner" type="checkbox" v-model="allcheckbox" @change="allCheck(1)"></th>
+                                        <th>快递名称</th>
+                                        <th>快递单号</th>
+                                        <th>件数(件)</th>
+                                        <th>发件人姓名</th>
+                                        <th>发件人手机</th>
+                                        <th>发件地址</th>
+                                        <th>收件人姓名</th>
+                                        <th>收件人手机</th>
+                                        <th>收件地址</th>
+                                        <th>揽件人/网点</th>
+                                        <th>入库时间</th>
+                                        <th>类型</th>
+                                        <th>状态</th>
+
+                                        <th>操作</th>
+
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="(item, index) in sendList" :key="item.id" :value="index" v-cloak>
+                                        <td><input type="checkbox" v-model="item.checked" @change="singleCheck(item,1)"></td>
+                                        <td>{{item.expressCompany}}</td>
+                                        <td :class="item.unusual? 'abnormal':''">
+                                            <img v-if="item.unusual" class="red" src="../../img/abnormal.png">
+                                            <span>
+                                    <a style="cursor: pointer;" @click="TransportDetail(item.expressNumber)">{{item.expressNumber}}</a>&nbsp;
+                                </span>
+                                        </td>
+                                        <td>{{item.goodsNumber}}</td>
+                                        <td>{{item.senderName}}</td>
+                                        <td>{{item.senderMobilephone}}</td>
+                                        <td>{{item.senderAddress}}</td>
+
+                                        <td>{{item.recipientName}}</td>
+                                        <td>{{item.recipientMobilephone}}</td>
+                                        <td>{{item.recipientAddress}}</td>
+
+                                        <td>{{item.name}}</td>
+                                        <td>{{item.startTime}}</td> <!--疑问-->
+                                        <td>{{item.sendType}}</td>
+                                        <td><span>{{item.loaded}}</span>
+                                        </td>
+                                        <td>
+                                            <el-button v-show="item.sendType === '寄件'"  type="text" style="margin-right: 20px;" @click.prevent=cancelAll('cancelExpress',item.expressNumber)>取消</el-button>
+                                            <el-button v-show="item.surcharge === '额外派送'" type="text" style="margin-right: 20px;" @click=cancelAll('surcharge',item.expressNumber)>取消额外派送</el-button>
+                                            <el-button v-show="item.loaded === '已装车'" type="text" style="margin-right: 20px;" @click=cancelAll('loaded',item.expressNumber)>取消装车</el-button>
+                                            <el-button  type="text" @click=TransportDetail(item.expressNumber)>详情</el-button>
+
+                                        </td>
+
+
+
+
+                                    </tr>
+                                    <tr v-if='sendList.length==0'><td colspan='15'>没有找到匹配的记录</td></tr>
+
+                                    </tbody>
+                                </table>
+
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </el-tab-pane>
+            </el-tabs>
+        </div>
+
+
+        <div class="pagination-box">
+            <el-pagination
+                    @size-change="handleSizeChangeS(pageSize,0)"
+                    @current-change="handleCurrentChangeS(page,0)"
+                    :current-page="pageS"
+                    :page-sizes="[10, 20, 30, 40]"
+                    :page-size="pageSizeS"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="totalS">
+            </el-pagination>
+        </div>
+
+        <!--导入-->
+        <el-dialog title="导入" :visible.sync="ScanningDialog" center style="font-weight: bolder;font-size: 24px;">
+
+
+            <el-form :model="form">
+
+                <el-form-item label="上传文件" :label-width="formLabelWidth">
+
+
+                    <el-upload
+                            class="upload-file"
+                            drag
+                            ref="uploadL"
+                            action="a"
+                            :file-list="ruleFormList"
+                            :on-preview="handlePictureCardPreview"
+                            :on-remove="handleRemove"
+                            :on-success="onSuccss"
+                            :on-error="onError"
+                            :on-progress="onProgress"
+                            :before-upload="beforeAvatarUpload"
+                            :auto-upload="false"
+                            multiple
+                            :http-request="UploadImage"
+                    >
+                        <i class="el-icon-upload"></i>
+                        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                    </el-upload>
+                    <!--<el-upload-->
+                    <!---->
+                    <!--drag-->
+                    <!--action="doUpload"-->
+                    <!--:before-upload="beforeUpload"-->
+                    <!--ref="newupload"-->
+                    <!--multiple-->
+                    <!--:auto-upload="false"-->
+                    <!--:http-request="UploadFile"-->
+                    <!--&gt;-->
+                    <!---->
+                    <!--</el-upload>-->
+
+                    <!--<el-dialog :visible.sync="dialogImg">-->
+                    <!--<img width="100%" :src="dialogImageUrl" alt="">-->
+                    <!--</el-dialog>-->
+
+
+                </el-form-item>
+            </el-form>
+
+
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="cancel">取 消</el-button>
+                <el-button type="primary" @click="ScanningSure()">确 定</el-button>
+            </div>
+        </el-dialog>
+
+        <!--打包-->
+        <el-dialog title="打包" :visible.sync="PackDialog" center style="font-weight: bolder;font-size: 24px;">
+            <el-form>
+                <el-tabs type="card" v-model="PackName" tab-position="middle" @tab-click="packClick">
+                    <el-tab-pane label="创建新包" name="new"></el-tab-pane>
+
+
+                    <el-tab-pane label="并入已打包" name="old">
+                        <el-table  border stripe height="200"  :data="tableData" style="width: 100%;margin-top: 50px;">
+
+                            <el-table-column
+                                    prop=""
+                                    label="选择"
+                                    align='center'
+
+                            >
+                                <template scope="scope">
+                                    <el-radio :label="scope.row.id" v-model="templateRadio" @change.native="getTemplateRow(scope.$index,scope.row)">&nbsp</el-radio>
+                                </template>
+                            </el-table-column>
+                            <el-table-column
+                                    prop="packageNumber"
+                                    label="包号"
+                                    align='center'
+
+                            >
+                            </el-table-column>
+                        </el-table>
+
+                    </el-tab-pane>
+
+
+                </el-tabs>
+            </el-form>
+
+            <div slot="footer" class="dialog-footer" style="margin-top: 20px;">
+                <el-button type="primary" @click="PackSure">确 定</el-button>
+            </div>
+        </el-dialog>
+
+        <!--分派弹框-->
+        <el-dialog title="分派" :visible.sync="DispatchDialog" center style="font-weight: bolder;font-size: 24px;">
+
+            <div class="form-box" style="border-bottom: none;margin-bottom: 0px;">
+                <!--<form role="form" class="flex-start-center" id="">-->
+                <el-form :model="form">
+
+                    <el-row>
+                        <el-col :span="15">
+                            <el-form-item label="快递员名称 :">
+                                <el-input v-model="DispatchList.name"   autocomplete="off" clearable style="width: 70%;"></el-input>
+                                <!--<el-input v-model="form.name" autocomplete="off" hidden></el-input>-->
+                            </el-form-item>
+                        </el-col>
+
+
+                        <el-col :span="4">
+                            <el-button type="primary" class="button-blue" @click="DispatchSearch">查询</el-button>
+                        </el-col>
+
+                    </el-row>
+
+                </el-form>
+            </div>
+
+            <div class="table-box" style="border-top: 1px solid #ccc;border-bottom: 1px solid #ccc;padding-top:24px;padding-bottom:24px;">
+                <div class="table-content-box" style="text-overflow: ellipsis;white-space: nowrap;overflow-x: scroll;">
+                    <div>
+                        <table class="table table-bordered">
+
+                            <thead>
+                            <tr class="table-th">
+                                <th width="6%"></th>
+                                <th>姓名</th>
+                                <th>电话</th>
+                                <th>角色</th>
+                                <th>负责区域</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-if='DispatchList.length==0'><td colspan='13'>没有找到匹配的记录</td></tr>
+                            <tr v-for="(item, index) in DispatchList" :key="item.id" :value="index" v-cloak>
+                                <td>
+                                    <el-button size="mini" type="primary" class="button-blue" @click="DispatchSure(item.id)">选择</el-button>
+                                </td>
+                                <td>{{item.userName}}</td>
+                                <td>{{item.phone}}</td>
+                                <td>{{item.roleName}}</td>
+                                <td>{{item.wareHouseName}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="pagination-box floatnone">
+                <el-pagination
+                        @size-change="handleSizeChangell"
+                        @current-change="handleCurrentChangell"
+                        :current-page="pagell"
+                        :page-sizes="[10, 20, 30, 40]"
+                        :page-size="pageSizell"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="totalll">
+                </el-pagination>
+            </div>
+
+
+        </el-dialog>
+        <!--装车弹框-->
+        <el-dialog title="选择目的网点与车辆" :visible.sync="LoadingDialog" center style="font-weight: bolder;font-size: 24px;">
+
+            <div class="form-box" style="border-bottom: none;margin-bottom: 20px;">
+
+                <el-form>
+                    <el-tabs  v-if="main" type="card" v-model="LoadingName" tab-position="middle" @tab-click="LoadingClick">
+                        <el-tab-pane label="选择新网点与车辆" name="new">
+                            <el-form style="margin-top:60px;">
+                                <el-row >
+                                    <el-col :span="10">
+                                        <el-form-item label="乡镇网点 :">
+                                            <el-select size="small"  v-model="LSearchList.level" style="width: 60%;"  @click.native="getWarehouseId">
+                                                <el-option v-for="(opt,o) in LoadingOptionll" :key="opt.id" :label="opt.name" :value="opt.id">
+                                                </el-option>
+                                            </el-select>
+
+                                            <!--<el-input v-model="LSearchList.level" autocomplete="off" clearable style="width: 80%;"></el-input>-->
+                                            <!--<el-input v-model="form.name" autocomplete="off" hidden></el-input>-->
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-form-item label="网点名称 :">
+                                            <el-input v-model="LSearchList.name" style="width: 50%;" autocomplete="off" clearable ></el-input>
+                                            <!--<el-input v-model="form.name" autocomplete="off" hidden></el-input>-->
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="6">
+                                        <el-button type="primary" size="small" class="button-blue" @click="findAllWay">查询</el-button>
+                                        <el-button type="primary" size="small" class="button-blue" @click="reset">重置</el-button>
+
+                                    </el-col>
+
+                                </el-row>
+                            </el-form>
+
+
+
+                            <el-table border stripe height="200" :data="LoadingData" style="width: 100%;">
+                                <el-table-column
+                                        prop="level"
+                                        label="网点类型"
+                                        align='center'
+                                >
+                                </el-table-column>
+                                <el-table-column
+                                        label="网点名称"
+                                        align='center'
+                                        prop="name"
+                                >
+
+                                    <template scope="scope">
+                                        <el-button type="primary" size="small" style="margin-left: 20px;" @click.native="LoadingBtn(scope)">{{scope.row.name}}</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+
+                            <div class="pagination-box floatnone">
+                                <el-pagination
+                                        @size-change="handleSizeChangel"
+                                        @current-change="handleCurrentChangel"
+                                        :current-page="pagel"
+                                        :page-sizes="[10, 20, 30, 40]"
+                                        :page-size="pageSizel"
+                                        layout="total, sizes, prev, pager, next, jumper"
+                                        :total="totall">
+                                </el-pagination>
+                            </div>
+
+                        </el-tab-pane>
+
+
+                        <el-tab-pane label="选择已装车辆" name="old">
+
+                            <el-table border stripe height="200" :data="LoadingData" style="width: 100%;margin-top: 60px;">
+                                <el-table-column label="选择" align='center'>
+                                    <template scope="scope">
+                                        <el-radio :label="scope.row.id" v-model="templateRadio" @change.native="getTemplateRow(scope.$index,scope.row)">&nbsp</el-radio>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="plateNumber"
+                                        label="车牌号"
+                                        align='center'
+                                >
+                                </el-table-column>
+                                <el-table-column
+                                        prop="type"
+                                        label="车辆类型"
+                                        align='center'
+                                >
+                                </el-table-column>
+                                <el-table-column
+                                        prop="belong"
+                                        label="车辆所属"
+                                        align='center'
+                                >
+                                </el-table-column>
+                                <el-table-column
+                                        label="经过网点"
+                                        align='center'
+                                        prop=""
+                                >
+                                    <template scope="scope">
+                                        <el-select size="small"  v-model="scope.row.OptionsStatus" style="width:100%;" @click.native="getWarehouse(scope)">
+                                            <el-option v-for="(opt,o) in scope.row.LoadingOptions" :key="o" :label="opt" :value="o">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+
+                        </el-tab-pane>
+
+
+                    </el-tabs>
+
+                    <div style="margin-bottom: 20px;" v-if="contant">
+                        <el-button type="text" style="font-size: 36px;color: #337ab7;" size="small" class="iconfont icon-fanhui1" @click.prevent="mainTrue"></el-button>
+                        <h1 style="display: -webkit-inline-box;width: 90%;color:#cccccc;text-align: -webkit-center;">{{warehouseName}}</h1>
+
+                    <el-table  border stripe height="250"  :data="LoadingBtnData" style="width: 100%;margin-top: 10px;">
+                        <el-table-column label="选择" align='center'>
+                            <template scope="scope">
+                                <el-radio :label="scope.row.id" v-model="templateRadio" @change.native="getTemplateRow(scope.$index,scope.row)">&nbsp</el-radio>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="plateNumber"
+                                label="车牌号"
+                                width="120"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="type"
+                                label="车辆类型"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="belong"
+                                label="车辆所属"
+                                align='center'
+                        >
+                        </el-table-column>
+                    </el-table>
+                    </div>
+
+                </el-form>
+            </div>
+            <div slot="footer" class="dialog-footer" v-if="loadingS">
+                <el-button type="primary" @click="LoadingSureK">确 定</el-button>
+            </div>
+
+        </el-dialog>
+
+        <!--退回弹框-->
+        <el-dialog title="退回" customClass="ReturnDialog" :visible.sync="ReturnDialog" center style="font-weight: bolder;font-size: 24px;">
+
+            <el-form :model="form">
+                <el-form-item label="备注" :label-width="formLabelWidthl">
+                    <el-input
+                            type="textarea"
+                            :autosize="{ minRows: 4, maxRows: 6}"
+                            :rows="4"
+                            placeholder="请输入内容"
+                            v-model="ReturnForm.remarks"
+                            style="width: 95%">
+                    </el-input>
+                </el-form-item>
+            </el-form>
+
+            <div slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="ReturnSure">确 定</el-button>
+            </div>
+        </el-dialog>
+
+        <!--额外派送弹框-->
+        <!--ExtraReliveryDialog-->
+        <el-dialog title="送货"  :visible.sync="ExtraReliveryDialog" center style="font-weight: bolder;font-size: 24px;">
+
+            <el-form :model="form">
+                <el-form-item label="派送费" :label-width="formLabelWidth">
+                    <el-input v-model="ExtraReliveryForm.surcharge" autocomplete="off" style="width: 120px;"></el-input>
+                    <span>元</span>
+                </el-form-item>
+            </el-form>
+
+
+            <div slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="ExtraReliverySure(1)">确 定</el-button>
+            </div>
+        </el-dialog>
+
+        <!--自提签收-->
+        <el-dialog title="签收" :visible.sync="SigningDialog" center style="font-weight: bolder;font-size: 24px;">
+
+            <el-form :model="form">
+                <el-row>
+                    <el-col :span="10">
+
+                        <el-form-item label="收件人 :" :label-width="formLabelWidth">
+                            <el-input v-model="recipientName" autocomplete="off" readonly></el-input>
+                            <!--<el-input v-model="form.name" autocomplete="off" hidden></el-input>-->
+                        </el-form-item>
+
+                    </el-col>
+                    <el-col :span="10">
+                        <el-form-item label="签收人 :" :label-width="formLabelWidth">
+                            <el-input v-model="form.name" autocomplete="off" clearable></el-input>
+                            <!--<el-input v-model="form.name" autocomplete="off" hidden></el-input>-->
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <!--<el-form-item label="签收时间 :" :label-width="formLabelWidth">-->
+                <!--<el-input v-model="form.time" autocomplete="off" :disabled="true"></el-input>-->
+                <!--</el-form-item>-->
+                <el-form-item label="签收图片 :" :label-width="formLabelWidth">
+                    <el-upload
+                            ref="upload"
+                            action="a"
+                            :limit="3"
+                            :file-list="ruleFormListQ"
+                            list-type="picture-card"
+                            :on-preview="handlePictureCardPreview"
+                            :on-remove="handleRemove"
+                            :on-success="onSuccss"
+                            :on-error="onError"
+                            :on-progress="onProgress"
+                            :before-upload="beforeAvatarUpload"
+                            :auto-upload="false"
+                            :http-request="UploadImage"
+                            :on-exceed="handleExceed"
+
+                    >
+                        <i class="el-icon-plus"></i>
+                    </el-upload>
+                    <el-dialog :visible.sync="dialogImg">
+                        <img width="100%" :src="dialogImageUrl" alt="">
+                    </el-dialog>
+                </el-form-item>
+            </el-form>
+
+
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="cancel">取 消</el-button>
+                <el-button type="primary" @click="SigningSure(1)">确 定</el-button>
+            </div>
+        </el-dialog>
+
+        <!--异常-->
+        <el-dialog title="异常" :visible.sync="AbnormalDialog" center style="font-weight: bolder;font-size: 24px;z-index:10;">
+
+            <el-form :model="form" >
+                <div v-for="(item, index) in selectionsIds" id="abnormalTop">
+                    <el-row  >
+                        <el-col :span="12">
+                            <el-form-item label="快递名称 :" :label-width="formLabelWidth">
+                                <!--<span v-model="AbnormalList.expressCompany"></span>-->
+                                <!--<el-input v-model="expressCompany"></el-input>-->
+                                <span>{{item.expressCompany}}</span>
+
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="快递单号 :" :label-width="formLabelWidth">
+                                <!--<span id="expressNumber"></span>-->
+                                <span>{{item.expressNumber}}</span>
+                                <!--<span  v-model="AbnormalList.expressNumber"></span>-->
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row  >
+                        <el-col :span="12">
+                            <el-form-item label="货物类型 :" :label-width="formLabelWidth">
+                                <!--<span  v-model="AbnormalList.goodsType"></span>-->
+                                <!--<span id="goodsType"></span>-->
+
+                                <span>{{item.goodsType}}</span>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="货物名称 :" :label-width="formLabelWidth">
+                                <!--<span id="goodsName"></span>-->
+                                <span>{{item.goodsName}}</span>
+                                <!--<span  v-model="AbnormalList.goodsName"></span>-->
+
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row >
+                        <el-col :span="24">
+                            <el-form-item label="发货地址 :" :label-width="formLabelWidth">
+                                <span>{{item.senderAddress}}</span>
+                                <span class="marginleftspan">{{item.senderName}}</span><span class="marginrightspan">{{item.senderMobilephone}}</span>
+
+
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+
+                        <el-col :span="24">
+                            <el-form-item label="收货地址 :" :label-width="formLabelWidth">
+                                <span>{{item.recipientAddress}}</span>
+                                <span class="marginleftspan">{{item.recipientName}}</span><span class="marginrightspan">{{item.recipientMobilephone}}</span>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                </div>
+                <div id="abnormalBottom">
+                    <el-form-item label="异常类型 :" :label-width="formLabelWidth">
+                        <el-select v-model="AbnormalForm.errorType" placeholder="请选择异常类型">
+                            <el-option label="货物破损" value="1"></el-option>
+                            <el-option label="货物缺失" value="2"></el-option>
+                            <el-option label="表面划伤" value="3"></el-option>
+                            <el-option label="其他" value="4"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="备注 :" :label-width="formLabelWidth">
+                        <el-input
+                                type="textarea"
+                                :rows="4"
+                                placeholder="请输入内容"
+                                v-model="AbnormalForm.remarks"
+                                style="width: 85%"
+                        >
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="签收图片 :" :label-width="formLabelWidth">
+
+
+                        <el-upload
+                                ref="uploadA"
+                                action="a"
+                                :limit="3"
+                                :file-list="ruleFormListA"
+                                list-type="picture-card"
+                                :on-preview="handlePictureCardPreview"
+                                :on-remove="handleRemove"
+                                :on-success="onSuccss"
+                                :on-error="onError"
+                                :on-progress="onProgress"
+                                :before-upload="beforeAvatarUpload"
+                                :auto-upload="false"
+                                :http-request="UploadImage"
+                                :on-exceed="handleExceed"
+                        >
+                            <i class="el-icon-plus"></i>
+                        </el-upload>
+
+
+                        <el-dialog :visible.sync="dialogImg">
+                            <img width="100%" :src="dialogImageUrl" alt="">
+                        </el-dialog>
+
+
+                    </el-form-item>
+                </div>
+            </el-form>
+
+
+            <div slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="AbnormalSure(1)">确 定</el-button>
+            </div>
+        </el-dialog>
+
+        <!--取消-->
+        <el-dialog :visible.sync="CancelAllDialog">
+
+            <el-form >
+                <el-form-item>
+                    <h1>{{action}}</h1>
+                    <!--<span class="marginleftspan">{{item.senderName}}</span><span class="marginrightspan">{{item.senderMobilephone}}</span>--
+
+                <!--<div ></div>-->
+                    <!--<h1 v-model="action"></h1>-->
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer" style="text-align: center;">
+                <el-button @click="cancel">取 消</el-button>
+                <el-button type="warning" @click="cacelAllSure">确 定</el-button>
+            </div>
+        </el-dialog>
+
+        <!--卸车扫描-->
+        <el-dialog  title="卸车扫描列表" :visible.sync="UnloadingDialog" center style="font-weight: bolder;font-size: 24px;z-index:10;" :before-close="closeDialog">
+            <div class="" style="border-bottom: none;margin-bottom: 0px;">
+                <el-form>
+                    <el-form-item label="已扫描 :" :label-width="formLabelWidth">
+                        <span style="color: red;">{{UnloadingTotal}}</span><span>件</span>
+                    </el-form-item>
+                </el-form>
+            </div>
+
+            <div class="table-box" style="padding-top:12px;">
+                <div class="table-content-box" >
+                    <el-table border stripe height="400" :data="UnloadingData" style="width: 100%;" @selection-change="handleSelectionChange">
+                        <el-table-column type="selection"  width="55" align="center"></el-table-column>
+                        <el-table-column
+                                prop="expressCompany"
+                                label="快递名称"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="expressNumber"
+                                label="快递单号"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                label="操作"
+                                align='center'
+                        >
+
+                            <template scope="scope">
+                                <el-button type="text" size="small" style="margin-left: 20px;" @click.native="Abnormall(scope.row)">异常</el-button>
+                                <el-button type="text" size="small" style="margin-left: 20px;" @click.native="cancelAll('Unloading',scope.row)">取消卸车</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </div>
+
+
+            <div slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="UnloadingSure">确 定 入 库</el-button>
+            </div>
+        </el-dialog>
+
+        <!--寄件详情-->
+        <el-dialog  title="寄件详情" :visible.sync="ConditionDialog" center style="font-weight: bolder;font-size: 24px;z-index:10;">
+
+            <el-form  :model="ruleForm" ref="ruleForm">
+                <el-row :gutter="40" style="height: 400px;overflow-y: scroll;">
+                    <el-col :span="col.span ? col.span: 12" v-for="col in columns" :key="col.value" :class="col.paddings? 'paddings':''">
+                            <el-form-item :label="col.label" :prop="col.value" :label-width="col.labelW? col.labelW : '26%'" :class="col.types==='txt'? 'h1':'borderA'">
+                            <!-- 输入框 -->
+                            <el-input v-if="col.types === 'input'" size="small" v-model="ruleForm[col.value]" disabled :placeholder="col.placeholder" class="borderB"></el-input>
+                                <!--选择器-->
+                            <el-select v-else-if="col.types === 'select'" size="small" disabled  v-model="ruleForm[col.value]" :placeholder="col.placeholder" style="width:100%;">
+                                <el-option v-for="(opt,o) in col.options" :key="o" :label="opt.label" :value="opt.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row style="text-align:center;margin-top:80px;">
+                    <el-button type="info" @click.prevent="cancel" style="font-size: 16px;">取消</el-button>
+                    <el-button type="primary" @click.prevent="ConditionSure">揽收</el-button>
+                </el-row>
+            </el-form>
+
+
+        </el-dialog>
+
+
+
+
+    </div>
+
+
+</div>
+</body>
+</html>
+
+
+<script src="../../js/wang/utils.js"></script>
+
+<script src="../../js/wang/send_warehouse.js"></script>
+

@@ -1,0 +1,108 @@
+.nav-right{
+    padding-left: 27px;
+}
+.ReturnDialog{
+    width: 480px;
+    /*height: 270px;*/
+}
+.marginleftspan{
+    margin-left:20px;
+}
+.marginrightspan{
+    margin-left: 10px;
+}
+
+.abnormal{
+    position: relative;
+}
+#abnormalTop{
+    border: 1px solid #cfcfcf;
+}
+#abnormalTop .el-form-item{
+    margin-bottom:0px;
+}
+#abnormalBottom{
+    border: 1px solid #cfcfcf;
+    margin-top:10px;
+    padding-top: 10px;
+}
+#abnormalBottom .el-form-item{
+    margin-bottom:10px;
+}
+.red{
+    /*background-image: url("../../img/abnormal.png");*/
+    /*color: red;*/
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: -1px;
+    left: -1px;
+}
+.el-dialog[aria-label="送货"]{
+    width: 400px;
+}
+.el-dialog[aria-label="退回"]{
+    width: 480px;
+}
+.el-dialog[aria-label="卸车扫描列表"]{
+    width: 55%;
+}
+
+.button-blue{
+    background-color: #169bd5;
+    color: #ffffff;
+}
+.floatnone{
+    float: none;
+}
+.form-box{
+    margin-top: 0px;
+}
+.table-box{
+    margin-top: 0px;
+}
+.fitcontent{
+    width: fit-content;
+    float: left;
+}
+.floatleft{
+    top: 0px;
+    position: relative;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: 60px;
+
+}
+#myTab li a{
+    color: #ddd;
+    /*background: #fafafa;*/
+    color: #999;
+
+}
+#myTab .active a{
+    background: #337ab7;
+    color: #ffffff;
+}
+.el-dialog[aria-label="打包"] .el-tabs__header{
+    margin: 0 32.9133%;
+}
+.el-dialog[aria-label="打包"] .el-table__body{
+    margin: auto;
+}
+.el-dialog[aria-label="选择目的网点与车辆"] .el-tabs__header{
+    margin:0 26.615%;
+}
+.el-dialog[aria-label="选择目的网点与车辆"] .el-table__body, .el-dialog[aria-label="选择目的网点与车辆"] .el-table__header{
+    margin: auto;
+}
+
+.el-dialog[aria-label="打包"] .el-table__body, .el-dialog[aria-label="打包"] .el-table__header{
+    margin: auto;
+}
+#cz span{
+    margin-right: 10px;
+}
+h1{
+    text-align: center;
+    color: red;
+}

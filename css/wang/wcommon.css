@@ -1,0 +1,388 @@
+*{
+    /*text-decoration: none;*/
+}
+[v-cloak] {
+    display: none;
+}
+
+
+/* form */
+.form-box {
+    position: relative;
+    margin-top: 69px;
+    margin: 30px 31px 20px 20px;
+}
+
+.form-box {
+    border-bottom: 1px solid #ccc;
+}
+
+.form-item {
+    width: 32%;
+    margin-bottom: 20px;
+}
+
+.form-item .label-item {
+    /* width: 80px; */
+    flex: 1;
+    text-align: right;
+    font-size: 12px;
+    color: #3d3d3d;
+}
+
+.form-item .form-control {
+    width: 74%;
+    margin-left: 10px;
+}
+
+/* flex */
+.flex-end-center {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.flex-sb-center {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.flex-sb-center-nowrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.flex-end-center {
+    display: flex;
+    justify-content: end;
+    align-items: center;
+}
+
+.flex-start-center {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.flex-start-center-nowrap {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.flex-sb-unset {
+    display: flex;
+    align-items: unset;
+}
+
+/* btn */
+.operator-btn {
+    margin-right: 10px;
+    border-radius: 4px;
+}
+
+.o-btn {
+    padding: 0px 24px;
+    height: 32px;
+    line-height: 32px;
+    color: #fff;
+    font-size: 14px;
+    margin-right: 10px;
+    border-radius: 4px;
+}
+
+.submit-btn {
+    background: #43a16c;
+    border-radius: 4px;
+}
+
+.submit-btn:hover {
+    background-color: #1ABC9C;
+    border-radius: 4px;
+}
+
+.save-btn {
+    background: #43a16c;
+    border-radius: 4px;
+}
+
+
+.save-btn:hover {
+    background-color: #1ABC9C;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.back-btn {
+    background: #ff0000;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.back-btn:hover {
+    background-color: #d9534f;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.cancel-btn {
+    background: #ffffff;
+    border-radius: 4px;
+    color: #5987cf;
+    border: 1px solid #5987cf;
+}
+
+.cancel-btn:hover {
+    color: #5987cf;
+}
+
+.neworder-btn {
+    background: #5987cf;
+    border-radius: 4px;
+    color: #fff;
+    border: none;
+}
+
+.disabled-btn {
+    background: #85c2a0;
+    border-radius: 4px;
+}
+
+.neworder-btn:hover {
+    background-color: #68b1e3;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.b-defalut-btn {
+    background-color: #5987cf;
+    border-radius: 4px;
+    /* border-radius: 4px;
+    border: solid 1px #316fa7; */
+}
+
+.b-defalut-btn:hover {
+    background-color: #68b1e3;
+    border-radius: 4px;
+}
+
+.b-warning-btn {
+    background-color: #d9534f;
+    border-radius: 4px;
+    /* border-radius: 4px;
+    border: solid 1px #d43f3a; */
+}
+
+
+/* table */
+.table-box {
+    width: 95%;
+    margin-left:20px ;
+}
+
+.table-box .label-item {
+    margin-right: 10px;
+}
+
+.table-box .form-group {
+    margin: 0;
+}
+
+.table-box .form-control {
+    flex: 1;
+}
+
+.ml12 {
+    margin-left: 12px;
+}
+
+.mr0 {
+    margin-left: 0px;
+}
+
+/* .table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td{
+    padding:8px 0;
+} */
+
+
+.mr12 {
+    margin-right: 12px;
+}
+
+.pr12 {
+    padding-right: 12px;
+}
+
+
+
+.mr12 {
+    margin-right: 12px;
+}
+
+
+
+.table>tbody>tr>td,
+.table>tbody>tr>th,
+.table>tfoot>tr>td,
+.table>tfoot>tr>th,
+.table>thead>tr>td,
+.table>thead>tr>th {
+    vertical-align: middle;
+    text-align: center;
+}
+
+
+.table-box {
+    margin-top: 24px;
+}
+
+.table-box div:nth-child(1) {
+    flex: 1
+}
+
+.table-box div:nth-child(2) {
+    /* flex: 1 */
+}
+
+.table-box .table-bordered {
+    border: none;
+    border-top: 1px solid #ddd;
+}
+
+.table-box .table-title {
+    color: #fff;
+    text-align: center;
+    background: #43a16c;
+    height: 38px;
+    line-height: 38px;
+}
+
+.table-box .table-title:nth-child(1) {
+    border-right: 1px solid #ddd;
+}
+
+.table-content-box {
+    /* margin-top: 24px; */
+}
+
+td,
+th {
+    height: 51px;
+}
+
+.table-th {
+    background: #337ab7;
+    color: #fff;
+}
+
+.click-box{
+    position: relative;
+    margin-left:20px;
+    padding-bottom:35px ;
+    /*border-bottom: 1px solid #ccc;*/
+}
+.click-box a{
+   text-decoration: none;
+   cursor: pointer;
+   padding-right: 20px;
+}
+
+/*pagination-box*/
+.pagination-box{
+    /*width: 95%;*/
+    /*position: relative;*/
+    float: right;
+    /*margin-top: 55px;*/
+    margin: 55px 31px 20px 20px;
+    /*margin: 30px 31px 20px 20px;*/
+}
+
+
+/*form表单*/
+
+.nav-right{
+    padding-left: 27px;
+}
+.nav-right .el-dialog{
+    border-radius:4px;
+}
+.nav-right .el-dialog .el-dialog__title{
+    font-weight:bolder;
+    font-size: 24px;
+
+}
+.nav-right .el-dialog input[type='file']{
+    display: none;
+}
+.nav-right .el-dialog textarea{
+    resize:none;/*去掉伸缩图标*/
+}
+/*查询等按钮*/
+.el-button--primary{
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #337ab7;
+}
+/*tab标签页*/
+.el-tabs__header {
+    padding: 0;
+    margin: 0 0 15px;
+    width: fit-content;
+    display: inline;
+    position: absolute;
+
+}
+.el-tabs__item.is-active{
+    color: #fff;
+    background-color: #337ab7;
+    /*border:1px solid #337ab7;*/
+    /*!*border-color: #337ab7;*!*/
+    /*box-sizing:border-box;*/
+    /*-moz-box-sizing:border-box; !* Firefox *!*/
+    /*-webkit-box-sizing:border-box; !* Safari *!*/
+
+}
+.display{
+    display: none;
+}
+.el-table th.gutter{
+    display: table-cell!important;
+}
+.el-input.is-disabled .el-input__inner{
+    color: #606266;
+}
+.v-modal{
+    z-index: 10 !important;
+}
+.el-table th{
+    background-color:#337ab7;
+    color: #fff;
+}
+.fitcontent{
+    width: fit-content;
+    float: left;
+}
+.floatleft{
+    top: 0px;
+    position: relative;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: 60px;
+
+}
+.el-dialog[aria-label="签收"],.el-dialog[aria-label="签收详情"]{
+    width: 55%;
+}
+.el-dialog[aria-label="签收详情"] span[class="el-upload-list__item-delete"]{
+    display: none;
+}
+.el-dialog[aria-label="签收详情"] div[class="el-upload el-upload--picture-card"]{
+    display: none;
+}

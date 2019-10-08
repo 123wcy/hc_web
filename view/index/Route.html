@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style type="text/css">
+        body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
+    </style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=9ZQIqbGfMnbch4DLAMGk98YwIRgruIpi"></script>
+    <title>设置路线规划</title>
+</head>
+<body>
+<div style="width:100%;height:10%;float: left;">
+</div>
+<div style="width:20%;height:90%;float: left;">
+    <div style="width:200px;float: right;">
+        <input type="button" vaule="提交" onclick="test()">
+    </div>
+</div>
+<div id="allmap" style="width:79%;height:90%;float: left;">
+</div>
+</body>
+</html>
+<script type="text/javascript">
+    var map;//百度地图
+    function test() {
+        loading();//初始化地图  为了删除之前的轨迹
+        var coords = [
+            {
+                level:"1",//等级
+                lng:"116.301934",//经度
+                lat:"39.977552",//纬度
+                name:"北京",//名称
+                address:"工业大道99号"//地址
+            },
+            {
+                level:"1",
+                lng:"106.603855",
+                lat:"29.599149",
+                name:"重庆",
+                address:"工业大道100号"
+            },
+            {
+                level:"3",
+                lng:"113.268554",
+                lat:"23.140121",
+                name:"广州",
+                address:"工业大道101号"
+            },
+            {
+                level:"2",
+                lng:"119.294846",
+                lat:"26.077314",
+                name:"福州",
+                address:"工业大道102号"
+            },
+            {
+                level:"3",
+                lng:"120.888368",
+                lat:"31.988999",
+                name:"南通",
+                address:"工业大道103号"
+            }
+        ];
+        var lng=0;//经度
+        var lat=0;//纬度
+        //数据空值 以及重复处理
+        for (var i = 0; i <coords.length ; i++) {
+            if(coords[i].lng==null||coords[i].lat==null){
+                coords.splice(i,1);
+                i--;
+            }else {
+                if(coords[i].lng==lng&&coords[i].lat==lat){
+                    coords.splice(i,1);
+                    i--;
+                }else {
+                    lng=coords[i].lng;
+                    lat=coords[i].lat;
+                }
+            }
+        }
+        if(coords.length==0){
+            alert("未获取到路线信息！");
+        }else if(coords.length==1) {
+            var point = new BMap.Point(coords[0].lng,coords[0].lat);//创建点
+            var myIcon = new BMap.Icon("../../img/routeMarker.png", new BMap.Size(15,15),{anchor: new BMap.Size(7.5,7.5)});
+            var marker = new BMap.Marker(point,{icon:myIcon});  // 创建标注
+            map.addOverlay(marker);//添加标注
+            map.centerAndZoom(point, 8);//自动调为中心
+            addInfoWindow(marker,"出发地","地址1");//添加标签信息
+        }else{
+            var p0 = new BMap.Point(coords[0].lng,coords[0].lat);
+            var myIcon = new BMap.Icon("../../img/routeMarker.png", new BMap.Size(15,15),{anchor: new BMap.Size(7.5,7.5)});//图标
+            var marker = new BMap.Marker(p0,{icon:myIcon});  // 创建标注
+            map.addOverlay(marker);//第一个点添加窗口信息  参考文档：http://lbsyun.baidu.com/jsdemo.htm#c1_11
+            addInfoWindow(marker,"出发地","地址1");//添加标签信息
+            for (var i = 0; i <coords.length-1 ; i++) {
+                var p1 = new BMap.Point(coords[i].lng,coords[i].lat);//起点
+                var p2 = new BMap.Point(coords[i+1].lng,coords[i+1].lat);//终点
+                var marker2 = new BMap.Marker(p2,{icon:myIcon});  // 创建标注
+                map.addOverlay(marker2);
+                var driving= new BMap.DrivingRoute(map, {renderOptions:{map: map, autoViewport: false},
+                        onPolylinesSet:function(routes) {
+                            //加载完成事件
+                        },
+                        onMarkersSet:function(routes) {
+                            map.removeOverlay(routes[0].marker); //删除起点
+                            map.removeOverlay(routes[routes.length-1].marker); //删除终点
+                        }
+                });
+                driving.search(p1, p2);//waypoints表示途经点
+            }
+        }
+    }
+
+    //增加标签
+    function addInfoWindow(marker,name,address) {
+        var title = '<div style="font-weight:bold;color:#ce5d48;font-size:14px">' + "仓库详情" + '</div>';
+        var html = [];
+        html.push('<table cellspacing="0" style="table-layout:fixed;width:100%;font:12px arial,simsun,sans-serif"><tbody>');
+        html.push('<tr>');
+        html.push('<td style="vertical-align:top;line-height:16px;width:38px;white-space:nowrap;word-break:keep-all">名称：</td>');
+        html.push('<td style="vertical-align:top;line-height:16px">' + name + ' </td>');
+        html.push('</tr>');
+        html.push('<tr>');
+        html.push('<td style="vertical-align:top;line-height:16px;width:38px;white-space:nowrap;word-break:keep-all">地址：</td>');
+        html.push('<td style="vertical-align:top;line-height:16px">' + address + ' </td>');
+        html.push('</tr>');
+        html.push('</tbody></table>');
+        var infoWindow = new BMap.InfoWindow(html.join(""), {title: title, width: 200});
+        var openInfoWinFun = function () {
+            marker.openInfoWindow(infoWindow);
+            //map.centerAndZoom(marker.getPosition(),13);
+        }
+        marker.addEventListener("click", openInfoWinFun);
+        openInfoWinFun();
+    }
+
+    //页面初始化
+    window.onload=function(){
+        loading();
+    }
+
+    //初始化地图
+    function loading() {
+        map = new BMap.Map("allmap");
+        map.centerAndZoom("潢川", 6);
+        map.enableScrollWheelZoom(true);
+        //去除路网
+        map.setMapStyle({
+            styleJson:[
+                {
+                    "featureType": "road",
+                    "elementType": "all",
+                    "stylers": {
+                        "color": "#ffffff"
+                    }
+                },
+                {
+                    "featureType": "building",
+                    "elementType": "all",
+                    "stylers": {
+                        "visibility": "off"
+                    }
+                },
+                {
+                    "featureType": "nationalway",
+                    "elementType": "labels",
+                    "stylers": {
+                        "visibility": "off"
+                    }
+                }, {
+                    "featureType": "nationalway",
+                    "elementType": "geometry",
+                    "stylers": {
+                        "visibility": "off"
+                    }
+                },
+                {
+                    "featureType": "poilabel",
+                    "elementType": "all",
+                    "stylers": {
+                        "visibility": "off"
+                    }
+                }
+
+            ]
+        });
+    }
+</script>

@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>到货运输</title>
+
+
+    <!-- jquery -->
+    <script src="../../lib/jquery.1.11.3.min.js"></script>
+    <script src="../../lib/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../../lib/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <script src="../../lib/JsBarcode-master/JsBarcode.all.js"></script><!--生成条形码-->
+    <script src="../../lib/jQuery.print.min.js"></script>
+
+
+
+    <!--vue axios-->
+    <script src="../../lib/vue.js"></script>
+    <script src="../../lib/axios.js"></script>
+    <script src="../../lib/elementui/index.js"></script>
+    <link rel="stylesheet" href="../../lib/elementui/theme-chalk/index.css">
+    <script src="../../js/wang/js.cookie.min.js"></script>
+
+
+    <!--样式-->
+    <link rel="stylesheet" href="../../css/common.css">
+    <link rel="stylesheet" href="../../css/wang/wcommon.css">
+    <link rel="stylesheet" href="../../css/wang/font.css">
+    <link rel="stylesheet" href="../../css/wang/transport.css">
+
+
+
+</head>
+<body>
+<div id="app" v-cloak>
+
+
+    <div class="nav-right" id="main" v-if="mainShow">
+
+
+        <!--查询-->
+        <el-form :inline="true"   class="demo-form-inline" ref="select">
+            <el-form-item v-for="item in searchListArrival" :label="item.label" :prop="item.value" :label-width="item.width?item.width:'80px'" :key="item.value">
+                <!-- 输入框 -->
+                <el-input v-if="item.types === 'input'" size="small" v-model="searchList[item.value]" :placeholder="item.placeholder" clearable></el-input>
+
+                <!--选择器-->
+                <el-select v-else-if="item.types === 'select'" size="small"  v-model="searchList[item.value]" style="width:100%;">
+                    <el-option v-for="(opt,o) in item.options" :key="o" :label="opt.label" :value="opt.value">
+                    </el-option>
+                </el-select>
+
+                <!--时间选择器-->
+                <el-date-picker  v-else-if="item.types === 'datepicker'&&item.value === 'creatTime'" v-model="creatTime"  style="width:100%;"
+                                 type="daterange"
+                                 :picker-options="pickerOptions2"
+                                 range-separator="至"
+                                 start-placeholder="开始日期"
+                                 end-placeholder="结束日期">
+                </el-date-picker>
+
+                <!--时间选择器-->
+                <el-date-picker  v-else-if="item.types === 'datepicker'&&item.value === 'startTime'" v-model="startTime"  style="width:100%;"
+                                 type="daterange"
+                                 :picker-options="pickerOptions2"
+                                 range-separator="至"
+                                 start-placeholder="开始日期"
+                                 end-placeholder="结束日期">
+                </el-date-picker>
+
+                <!--时间选择器-->
+                <el-date-picker  v-else-if="item.types === 'datepicker'&&item.value === 'endTime'" v-model="endTime"  style="width:100%;"
+                                 type="daterange"
+                                 :picker-options="pickerOptions2"
+                                 range-separator="至"
+                                 start-placeholder="开始日期"
+                                 end-placeholder="结束日期">
+                </el-date-picker>
+
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" size="small" style="margin-left: 20px;" @click="searchBtn(0)">查询</el-button>
+                <el-button type="primary" size="small" style="margin-left: 20px;"  @click="reset">重置</el-button>
+            </el-form-item>
+        </el-form>
+
+
+        <div class="click-box" style="">
+            <div class="floatleft">
+            <el-button  size="small" class="iconfont icon-querenfache" @click.prevent="Departure">发车</el-button>
+
+            <el-button size="small" class="iconfont icon-cangku_daozhan" @click.prevent="Arrival">到站</el-button>
+
+            <el-button size="small" class="iconfont icon-zhuangcheqingdan" @click.prevent="LoadingList">装车清单</el-button>
+
+            <el-button  size="small" class="iconfont icon-yundandayin" @click.prevent="WayBill">运单</el-button>
+            </div>
+
+
+
+        <div class="table-box">
+            <div class="table-content-box" style="margin-top: 40px;text-overflow: ellipsis;white-space: nowrap;overflow-x: scroll;">
+                <div>
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr class="table-th">
+                            <th width="6%"><input type="checkbox" v-model="allcheckbox" @change="allCheck('findTransportDhList')"></th>
+                            <th>运单号</th>
+                            <th>车牌号</th>
+                            <th>装车单数</th>
+                            <th>装车件数</th>
+                            <th>司机</th>
+                            <th>电话</th>
+                            <th>线路</th>
+                            <th>创建时间</th>
+                            <th>发车时间</th>
+                            <th>完成时间</th>
+                            <th>运输状态</th>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-if='findTransportDhList.length==0'><td colspan='12'>没有找到匹配的记录</td></tr>
+                        <tr v-for="(item, index) in findTransportDhList" :key="item.id" :value="index" v-cloak>
+                            <td><input type="checkbox" v-model="item.checked" @change="singleCheck(item,'findTransportDhList')"></td>
+                            <td>{{item.waybillId}}</td>
+                            <td>{{item.platenumber}}</td>
+                            <td>
+
+                                <span>
+                                    <!--<a style="cursor: pointer;"  @click=go(item.id,item.state,item)>{{item.counts}}</a>&nbsp;-->
+                                    <a style="cursor: pointer;"  @click=go(item)>{{item.counts}}</a>&nbsp;
+
+                                </span>
+                            </td><!--件数跳转-->
+                            <td>
+
+                                <span>
+                                    <a style="cursor: pointer;"  @click=go(item)>{{item.numbers}}</a>&nbsp;
+                                </span>
+                            </td><!--件数跳转-->
+                            <td>{{item.drivername}}</td>
+                            <td>{{item.phone}}</td>
+                            <td>{{item.area}}</td>
+                            <td>{{item.creatTime}}</td>
+                            <td>{{item.starttime}}</td>
+                            <td>{{item.endtime}}</td>
+                            <td>{{item.state}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+            <div class="pagination-box">
+                <el-pagination
+                        @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"
+                        :current-page="page"
+                        :page-sizes="[10, 20, 30, 40]"
+                        :page-size="pageSize"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="total">
+                </el-pagination>
+            </div>
+        </div>
+
+        </div>
+
+
+    </div>
+
+
+<!--详情-->
+
+
+    <div class="nav-right"  id="contant" v-if="detailY">
+
+        <div style="border-bottom: 1px solid #0066cc;margin-bottom: 20px;">
+            <el-button type="text" style="font-size: 36px;" size="small" class="iconfont icon-fanhui1" @click.prevent="mainTrue"></el-button>
+            <h1 style="display: -webkit-inline-box;">运单号:{{selectionsIds[0].waybillId}}    车牌号:{{selectionsIds[0].platenumber}}</h1>
+            <h6 style="display: -webkit-inline-box;margin-left: 48%;">总票数 :{{selectionsIds[0].counts}}     总件数:{{selectionsIds[0].numbers}}</h6>
+        </div>
+
+
+
+        <!--查询-->
+        <el-form :inline="true"   class="demo-form-inline" ref="select">
+            <el-form-item v-for="item in totalListAll" :label="item.label" :prop="item.value" :label-width="item.width?item.width:'80px'" :key="item.value">
+                <!-- 输入框 -->
+                <el-input v-if="item.types === 'input'" size="small" v-model="searchTotalList[item.value]" :placeholder="item.placeholder" clearable></el-input>
+
+                <!--选择器-->
+                <el-select v-else-if="item.types === 'select'" size="small"  v-model="searchTotalList[item.value]" style="width:100%;">
+                    <el-option v-for="(opt,o) in item.options" :key="o" :label="opt.label" :value="opt.value">
+                    </el-option>
+                </el-select>
+
+                <!--时间选择器-->
+                <el-date-picker style="width:100%;" v-else-if="item.types === 'datepicker'&&item.value === 'loadingTime'" v-model="loadingTime"
+                                 type="daterange"
+                                 :picker-options="pickerOptions2"
+                                 range-separator="至"
+                                 start-placeholder="开始日期"
+                                 end-placeholder="结束日期">
+                </el-date-picker>
+
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" size="small" style="margin-left: 20px;" @click="searchBtnS">查询</el-button>
+                <el-button type="primary" size="small" style="margin-left: 20px;" @click="reset">重置</el-button>
+            </el-form-item>
+        </el-form>
+
+
+        <div class="click-box">
+            <el-tabs type="card" v-model="activeName" @tab-click="handleClick" v-show="isPackagea === '1'">
+                <el-tab-pane label="未卸车"  name="first">
+
+
+                    <el-table :data="findDhInfosList" style="width: 100%;margin-top: 40px;" border>
+                        <el-table-column
+                                type="selection"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="expressCompany"
+                                label="快递名称"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="expressNumber"
+                                label="单号"
+                                align='center'
+                        >
+                            <template slot-scope="props">
+                                <el-button type="text" size="small"
+                                           @click="TransportDetail(props.row.expressNumber)">
+                                    {{props.row.expressNumber}}
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="goodsNumber"
+                                label="件数"
+
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="recipientName"
+                                label="收件人姓名"
+
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="recipientMobilephone"
+                                label="收件人手机"
+
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="recipientAddress"
+                                label="收件地址"
+
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="装货时间"
+
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="warehouseName1"
+                                label="装车网点"
+
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="warehouseName2"
+                                label="目的网点"
+
+                                align='center'
+                        >
+                        </el-table-column>
+                    </el-table>
+
+
+                </el-tab-pane>
+                <el-tab-pane label="已卸车" name="second">
+
+                    <el-table border :data="findDhInfosList" style="width: 100%;margin-top: 40px;">
+                        <el-table-column
+                                type="selection"
+                                align='center'>
+                        </el-table-column>
+                        <el-table-column
+                                prop="expressCompany"
+                                label="快递名称"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="expressNumber"
+                                label="单号"
+                                align='center'
+                        >
+                            <template slot-scope="props">
+                                <el-button type="text" size="small"
+                                           @click="TransportDetail(props.row.expressNumber)">
+                                    {{props.row.expressNumber}}
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="goodsNumber"
+                                label="件数"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="recipientName"
+                                label="收件人姓名"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="recipientMobilephone"
+                                label="收件人手机"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="recipientAddress"
+                                label="收件地址"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="装货时间"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="warehouseName1"
+                                label="装车网点"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="warehouseName2"
+                                label="目的网点"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="unloadTime"
+                                label="卸车时间"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="warehouseName3"
+                                label="卸车网点"
+                                align='center'
+                        >
+                        </el-table-column>
+                    </el-table>
+
+
+                </el-tab-pane>
+            </el-tabs>
+            <el-tabs type="card" v-model="activeName" @tab-click="handleClick" v-show="isPackagea === '2'">
+                <el-tab-pane label="未卸车"  name="first">
+
+                    <el-table border :data="findDhInfosList" style="width: 100%;margin-top: 40px;"
+                              row-key="id"
+                              :expand-row-keys="expandKeys"
+                              @selection-change="handleSelectionChanges"
+                              @expand-change="expandSelect"
+                    >
+                        <el-table-column type="selection"></el-table-column>
+                        <el-table-column type="expand">
+                            <template>
+                                <el-table style="width: 100%;" label-position="center" border
+                                          :data="detaillist"
+                                          class="demo-table-expand ">
+                                    <el-table-column type="selection">
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="expressCompany"
+                                            label="快递名称"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="expressNumber"
+                                            label="单号"
+                                            align='center'
+                                    >
+                                        <template slot-scope="props">
+                                            <el-button type="text" size="small"
+                                                       @click="TransportDetail(props.row.expressNumber)">
+                                                {{props.row.expressNumber}}
+                                            </el-button>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="goodsNumber"
+                                            label="件数"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="recipientName"
+                                            label="收件人姓名"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="recipientMobilephone"
+                                            label="收件人手机"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="recipientAddress"
+                                            label="收件地址"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="createTime"
+                                            label="装货时间"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="warehouseName1"
+                                            label="装车网点"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="warehouseName2"
+                                            label="目的网点"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                </el-table>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column
+                                prop="packageNumber"
+                                label="包号"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="counts"
+                                label="件数"
+                                align='center'
+                        >
+                        </el-table-column>
+
+                        <el-table-column
+                                prop="createTime"
+                                label="装货时间"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="warehouseName1"
+                                label="装车网点"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="warehouseName2"
+                                label="目的网点"
+                                align='center'
+                        >
+                        </el-table-column>
+                    </el-table>
+
+
+                </el-tab-pane>
+                <el-tab-pane label="已卸车" name="second">
+
+                    <el-table border :data="findDhInfosList" style="width: 100%;margin-top: 40px;"
+                              row-key="id"
+                              :expand-row-keys="expandKeys"
+                              @selection-change="handleSelectionChanges"
+                              @expand-change="expandSelect"
+                    >
+                        <el-table-column type="selection">
+                        </el-table-column>
+
+                        <el-table-column type="expand">
+                            <template>
+                                <el-table style="width: 100%;" label-position="center" border
+                                          :data="detaillist"
+                                          class="demo-table-expand "
+                                          v-loading="loading"
+                                >
+                                    <el-table-column type="selection">
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="expressCompany"
+                                            label="快递名称"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="expressNumber"
+                                            label="单号"
+                                            align='center'
+                                    >
+                                        <template slot-scope="props">
+                                            <el-button type="text" size="small"
+                                                       @click="TransportDetail(props.row.expressNumber)">
+                                                {{props.row.expressNumber}}
+                                            </el-button>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="goodsNumber"
+                                            label="件数"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="recipientName"
+                                            label="收件人姓名"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="recipientMobilephone"
+                                            label="收件人手机"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="recipientAddress"
+                                            label="收件地址"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="createTime"
+                                            label="装货时间"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="warehouseName1"
+                                            label="装车网点"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="warehouseName2"
+                                            label="目的网点"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="unloadTime"
+                                            label="卸车时间"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                    <el-table-column
+                                            prop="warehouseName3"
+                                            label="卸车网点"
+                                            align='center'
+                                    >
+                                    </el-table-column>
+                                </el-table>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column
+                                prop="packageNumber"
+                                label="包号"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="counts"
+                                label="件数"
+                                align='center'
+                        >
+                        </el-table-column>
+
+                        <el-table-column
+                                prop="createTime"
+                                label="装货时间"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="warehouseName1"
+                                label="装车网点"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="warehouseName2"
+                                label="目的网点"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="unloadTime"
+                                label="卸车时间"
+                                align='center'
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="warehouseName3"
+                                label="卸车网点"
+                                align='center'
+                        >
+                        </el-table-column>
+                    </el-table>
+
+                </el-tab-pane>
+            </el-tabs>
+        </div>
+
+        <div class="pagination-box">
+            <el-pagination
+                    @size-change="handleSizeChangeS"
+                    @current-change="handleCurrentChangeS"
+                    :current-page="pageS"
+                    :page-sizes="[10, 20, 30, 40]"
+                    :page-size="pageSize"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="totalS">
+            </el-pagination>
+        </div>
+
+
+
+
+    </div>
+
+
+
+    <!--发车弹框-->
+    <el-dialog title="发车" :visible.sync="DepartureDialog" center style="font-weight: bolder;font-size: 24px;">
+
+        <el-form style="height: 150px;">
+            <el-form-item label="确认车牌号":label-width="formLabelWidthl" style="height: 100%;">
+                <table>
+                    <tr v-for="(item, index) in selectionsIds":key="item.id" :value="index" v-cloak>
+                        <td class="red" >{{item.platenumber}}</td>
+                    </tr>
+                </table>
+                <!--<span  >{{item.platenumber}}</span>-->
+            </el-form-item>
+        </el-form>
+
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="DepartureSure(0)">确 定</el-button>
+        </div>
+    </el-dialog>
+
+    <!--到站弹框-->
+    <el-dialog title="到站" :visible.sync="ArrivalDialog" center style="font-weight: bolder;font-size: 24px;">
+
+        <el-form style="height: 150px;">
+            <el-form-item label="确认车牌号":label-width="formLabelWidthl" style="height: 100%;">
+                <table>
+                    <tr v-for="(item, index) in selectionsIds":key="item.id" :value="index" v-cloak>
+                        <td class="red" >{{item.platenumber}}</td>
+                    </tr>
+                </table>
+                <!--<span  >{{item.platenumber}}</span>-->
+            </el-form-item>
+        </el-form>
+
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="DepartureSure(1)">确 定</el-button>
+        </div>
+    </el-dialog>
+
+    <!--装车清单-->
+    <el-dialog title="装车清单" :visible.sync="LoadingDialog" center style="font-weight: bolder;font-size: 24px;">
+
+        <el-form id="LoadingPrint" class="elform">
+        <el-row :gutter="20">
+                <el-col :span="12">
+                    <!--<el-form-item v-for="(item, index) in recordList">-->
+                    <el-form-item id="yd" v-for="(item, index) in TotalhList">
+                        <el-row>
+                            <el-col :span="4">
+                                <span>运单号 :</span>
+                            </el-col>
+                            <el-col :span="8">
+                                <span>{{item.waybillId}}</span>
+                            </el-col>
+                            <el-col :span="4">
+                                <span>总票数 :</span>
+                            </el-col>
+                            <el-col :span="8">
+                                <span>{{item.counts}}</span>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="4">
+                                <span>车牌号 :</span>
+                            </el-col>
+                            <el-col :span="8">
+                                <span>{{item.platenumber}}</span>
+                            </el-col>
+                            <el-col :span="4">
+                                <span>总件数 :</span>
+                            </el-col>
+                            <el-col :span="8">
+                                <span>{{item.numbers}}</span>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="4">
+                                <span>司机 :</span>
+                            </el-col>
+                            <el-col :span="8">
+                                <span>{{item.drivername}} {{item.phone}}</span>
+                            </el-col>
+                            <el-col :span="4">
+                                <span>总重量 :</span>
+                            </el-col>
+                            <el-col :span="8">
+                                <span>{{item.weight}}kg</span>
+                            </el-col>
+                        </el-row>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item id="img">
+                                <img id="imgcode" />
+                    </el-form-item>
+                </el-col>
+        </el-row>
+        <el-row>
+            <el-table stripe height="400" style="width: 100%;margin-top: 40px;" label-position="center" border
+                      :data="listList">
+
+                <el-table-column label="序号" type="index" align="center" show-overflow-tooltip width="50px">
+                </el-table-column>
+                <el-table-column
+                        prop="expressCompany"
+                        label="快递名称"
+                        align='center'
+                >
+                </el-table-column>
+                <el-table-column
+                        prop="expressNumber"
+                        label="单号"
+                        align='center'
+                >
+                    <template slot-scope="props">
+                        <el-button type="text" size="small"
+                                   @click="TransportDetail(props.row.expressNumber)">
+                            {{props.row.expressNumber}}
+                        </el-button>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="goodsNumber"
+                        label="件数"
+                        align='center'
+                >
+                </el-table-column>
+                <el-table-column
+                        prop="recipientName"
+                        label="收件人姓名"
+                        align='center'
+                >
+                </el-table-column>
+                <el-table-column
+                        prop="recipientMobilephone"
+                        label="收件人手机"
+                        align='center'
+                >
+                </el-table-column>
+                <el-table-column
+                        prop="recipientAddress"
+                        label="收件地址"
+                        align='center'
+                >
+                </el-table-column>
+
+                <el-table-column
+                        prop="warehouseName1"
+                        label="装车网点"
+                        align='center'
+                >
+                </el-table-column>
+                <el-table-column
+                        prop="warehouseName2"
+                        label="目的网点"
+                        align='center'
+                >
+                </el-table-column>
+            </el-table>
+            <div class="pagination-box">
+                <el-pagination
+                        @size-change="handleSizeChangeZC"
+                        @current-change="handleCurrentChangeZC"
+                        :current-page="pageZC"
+                        :page-sizes="[10, 20, 30, 40]"
+                        :page-size="pageSizeZC"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="totalZC">
+                </el-pagination>
+            </div>
+        </el-row>
+        <el-row style="text-align: center;">
+                    <el-button type="info" @click="cancel('LoadingDialog')" style="font-size: 16px;">取消</el-button>
+                    <el-button type="warning" @click.prevent="doPrint(0)" class="iconfont icon-dayin">打印</el-button>
+            </el-row>
+        </el-form>
+    </el-dialog>
+
+    <!--运单-->
+    <el-dialog title="运单" :visible.sync="WayBillDialog" center style="font-weight: bolder;font-size: 24px;">
+
+        <el-button type="text" class="print" @click="doPrint(1)" rel="external nofollow" target="_self"><img src="../../img/printerl.ico"></el-button>
+
+
+        <el-form id="WayBillPrint" class="elform">
+            <el-row :gutter="20">
+                <el-col :span="12">
+                    <!--<el-form-item v-for="(item, index) in recordList">-->
+                    <el-form-item id="yd" v-for="(item, index) in TotalhList">
+                        <el-row>
+                            <el-col :span="4">
+                                <span>运单号 :</span>
+                            </el-col>
+                            <el-col :span="8">
+                                <span>{{item.waybillId}}</span>
+                            </el-col>
+                            <el-col :span="4">
+                                <span>总票数 :</span>
+                            </el-col>
+                            <el-col :span="8">
+                                <span>{{item.counts}}</span>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="4">
+                                <span>车牌号 :</span>
+                            </el-col>
+                            <el-col :span="8">
+                                <span>{{item.platenumber}}</span>
+                            </el-col>
+                            <el-col :span="4">
+                                <span>总件数 :</span>
+                            </el-col>
+                            <el-col :span="8">
+                                <span>{{item.numbers}}</span>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="4">
+                                <span>司机 :</span>
+                            </el-col>
+                            <el-col :span="8">
+                                <span>{{item.drivername}} {{item.phone}}</span>
+                            </el-col>
+                            <el-col :span="4">
+                                <span>总重量 :</span>
+                            </el-col>
+                            <el-col :span="8">
+                                <span>{{item.weight}}kg</span>
+                            </el-col>
+                        </el-row>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item id="img">
+                        <img id="imgcodeW" />
+                    </el-form-item>
+                </el-col>
+            </el-row>
+
+            <el-row>
+                <el-table stripe height="250" style="width: 100%;margin-top: 40px;" label-position="center" border
+                          :data="listList">
+
+                    </el-table-column>
+                    <el-table-column
+                            prop="name"
+                            label="快递名称"
+                            align='center'
+                    >
+                    </el-table-column>
+                    <el-table-column
+                            prop="number"
+                            label="票数"
+                            align='center'
+                    >
+                    </el-table-column>
+                </el-table>
+            </el-row>
+        </el-form>
+    </el-dialog>
+
+</div>
+</body>
+</html>
+
+<script src="../../js/wang/utils.js"></script>
+<script src="../../js/wang/arrival_transportation.js"></script>
+

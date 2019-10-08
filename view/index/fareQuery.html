@@ -1,0 +1,257 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>潢川电子商务进农村</title>
+	<link href="../../css/bootstrap.min.css" rel="stylesheet" />
+	<link href="../../css/reset.css" rel="stylesheet" />
+	<link href="../../css/zheng/admin.css" rel="stylesheet" />
+	<link href="../../css/zheng/index.css" rel="stylesheet" />
+	<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet" />
+	<style>
+		[v-cloak]{display: none;}
+		.el-input__inner {
+			border: 0;
+		}
+
+		.el-input__suffix {
+			display: none;
+		}
+		.el-date-editor.el-input,
+		.el-date-editor.el-input__inner {
+			width: 470px;
+		}
+
+		.el-input__prefix,
+		.el-input__suffix {
+			right: -480px;
+		}
+
+		.el-input--prefix .el-input__inner {
+			padding-left: 0;
+		}
+
+		.info-btn button {
+			line-height: 1;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app" v-cloak>
+		<div class="main-page">
+			<div class="fill-info">
+				<div class="hc-fhd clearfix mt30">
+					<label>发货地</label>
+					<el-cascader style="width: 100%;" ref="cascaderAddr1" :options="platOptions" :separator="separator" v-model="sendOptions"
+						@active-item-change="handleItemChange" @change="sendChange" placeholder="请选择发货地">
+					</el-cascader>
+				</div>
+				<div class="hc-fhd clearfix mt30">
+					<label>目的地</label>
+					<el-cascader style="width: 100%;" ref="cascaderAddr2" :options="platOptions" :separator="separator" v-model="receptOptions"
+						@active-item-change="handleItemChange" @change="receptChange" placeholder="请选择目的地">
+					</el-cascader>
+				</div>
+				<div class="hc-fhd clearfix mt30" style="width: 676px;">
+					<label>重量</label>
+					<input id="startWeight" type="text" v-model="weight" placeholder="请输入重量">
+					<span>kg</span>
+				</div>
+				<div class="hc-fhd clearfix mt30" style="width: 676px;">
+					<label>发货时间</label>
+					<el-date-picker v-model="time" type="datetime" placeholder="选择日期时间">
+					</el-date-picker>
+				</div>
+				<div class="info-btn">
+					<el-button type="button" @click="getData">查询</el-button>
+				</div>
+				<el-dialog title="查询" :visible.sync="centerDialogVisible" width="80%" center :before-close="closeDialog">
+					<el-table :data="tableData" border style="width: 100%">
+						<el-table-column prop="source" label="快递名称">
+						</el-table-column>
+						<el-table-column prop="endWeight" label="重量换算器">
+
+						</el-table-column>
+						<el-table-column prop="keepTime" label="预计到达时效">
+						</el-table-column>
+						<el-table-column prop="anticipatedFreight" label="寄付价">
+						</el-table-column>
+					</el-table>
+					<!--<span slot="footer" class="dialog-footer">
+						<el-button @click="centerDialogVisible = false">取 消</el-button>
+						<el-button type="primary" @click="centerDialogVisible = false">确 定</el-button>
+					</span>-->
+				</el-dialog>
+			</div>
+		</div>
+		<footer id="footer">
+			<div style="height: 62px;"></div>
+			<div class="yq-link">
+				<ul>
+					<li>
+						<h1>友情链接</h1>
+						<p>河南华阁供应链科技有限公司</p>
+						<p>上海阁为信息科技有限公司</p>
+						<p>河南华英农业发展股份有限公司</p>
+					</li>
+					<li>
+						<h1>物流</h1>
+						<p>快递服务</p>
+						<p>物流服务</p>
+						<p>冷链服务</p>
+					</li>
+					<li>
+						<h1>服务与支持</h1>
+						<p>我要寄</p>
+						<p>运单追踪</p>
+						<p>服务网点</p>
+						<p>运费、时效查询</p>
+					</li>
+					<li>
+						<h1>关于我们</h1>
+						<p>公司简介</p>
+						<p>新闻资讯</p>
+						<p>人才招聘</p>
+					</li>
+					<li>
+						<h1>联系我们</h1>
+						<p>座机：0376-8888888</p>
+						<p>全国热线：4001234567</p>
+					</li>
+					<li>
+						<h1>马上联系我们</h1>
+						<img src="../../img/wechat-icon.png" alt="">
+					</li>
+				</ul>
+			</div>
+			<div class="copyright">Copyright © 2018 上海阁为信息科技有限公司 版权所有 沪ICP备17022322号-2</div>
+		</footer>
+	</div>
+	<script src="../../lib/vue.js"></script>
+	<script src="../../lib/elementui/index.js"></script>
+	<script src="../../lib/jquery.1.11.3.min.js"></script>
+	<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+	<script src="../../lib/jquery.tab.js"></script>
+	<script type="text/javascript" src="../../js/common.js"></script>
+	<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+	<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+	<script type="text/javascript" src="../../api/easy.config.js"></script>
+	<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+	<script type="text/javascript">
+		var app = new Vue({
+			el: '#app',
+			data: function(){
+				return {
+					weight: '',
+					time: '',
+					separator: '',
+					sendOptions: [],
+					receptOptions: [],
+					platOptions: [],
+					centerDialogVisible: false,
+					tableData: []					
+				}
+			},
+			created: function(){
+				this.getPosition();
+			},
+			methods: {
+				// 点击查询按钮
+				getData: function(){
+					var _this = this;
+					if(this.sendOptions.length === 0){
+						this.$message.error('请输入发货地');
+						return false;
+					}
+					
+					if(this.receptOptions.length === 0){
+						this.$message.error('请输入目的地');
+						return false;
+					}
+					var data = {
+						originatingProvince: this.senderAddressDetail[0],
+						originatingCity: this.senderAddressDetail[1],
+						destinationProvince: this.reptAddressDetail[0],
+						destinationCity: this.reptAddressDetail[1],
+						startWeight: this.weight						
+					}
+					EasyAjax.ajax_Post_Json({
+						url: 'timePrice/queryTimePrice',
+						data: JSON.stringify(data)
+					},function(res){
+						_this.centerDialogVisible = true
+						_this.tableData = res.data;
+					})
+				},
+				sendChange: function(){
+					this.senderAddressDetail = this.$refs['cascaderAddr1'].currentLabels;
+				},
+				receptChange: function(){
+					this.reptAddressDetail = this.$refs['cascaderAddr2'].currentLabels;
+				},
+				handleItemChange: function(val){
+					this.getPosition(val);
+				},
+				getPosition: function(val){
+		        	var _this = this;
+		        	var id = '';
+		        	if(!val){ // 加载
+		        		id = '7459';	
+		        	}else if(val.length === 1){ //加载二级数据
+		        		id = val[0];
+		        		
+		        	}else{ // 加载三级数据
+		        		
+		        		id = val[1];
+		        	}
+		        	EasyAjax.ajax_Get_Json({
+						url: 'region/queryRegions/'+id
+					},function(res){
+						if(res.success === true){
+							if(!val) { //初始化加载   查询省份数据
+					            _this.platOptions = res.data.map((e) => {
+					              return {value: e.id, label: e.regionName, children: []}
+					            });
+					            
+					          } else if (val.length === 1) { //加载二级    查询该省下市级数据
+					            _this.platOptions.map((item) => {
+					              if(item.value === val[0]) {
+					                item.children = res.data.map((e) => {
+					                  return {value: e.id, label: e.regionName, children: []}
+					                })
+					              }
+					            })
+					          } else {  //加载3级   查询该省市下县级数据
+					            _this.platOptions.map((item) => {
+					              if(item.value === val[0]) {
+					                item.children.map((childItem) => {
+					                  if(childItem.value === val[1]){
+					                    childItem.children = res.data.map((e) => {
+					                      return {value: e.id, label: e.regionName}
+					                    })
+					                  }
+					                })
+					              }
+					            })
+					          }
+						}
+					})
+		       	},
+		       	closeDialog: function(done){
+		       		this.sendOptions = []
+					this.receptOptions = []
+					this.weight = ''
+					this.time = ''
+					done();
+		       	}
+				
+			}
+		})
+	</script>
+</body>
+
+</html>

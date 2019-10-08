@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>司机</title>
+		<link href="../../css/reset.css" rel="stylesheet"/>
+		<link href="../../css/style.css" rel="stylesheet"/>
+		<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet"/>
+		<link href="../../css/zheng/admin.css" rel="stylesheet"/>
+		<link href="../../css/common/sideBar.css" rel="stylesheet"/>
+		<style type="text/css">
+			[v-cloak]{display: none;}
+		</style>
+	</head>
+	<body>
+		<div id="app" class="rightSideBar" v-cloak>
+			<!--查询-->
+			<el-form :inline="true" :model="ruleForm" ref="ruleForm" class="demo-form-inline">
+				<el-form-item v-for="item in searchList" :label="item.label" :prop="item.value" :label-width="item.width?item.width:'80px'" :key="item.value">
+					<!-- 输入框 -->
+	                <el-input v-if="item.types === 'input'" clearable @clear="onSubmit" size="small" v-model="ruleForm[item.value]" :placeholder="item.placeholder"></el-input>
+			
+	                <!--选择器--> 
+	                <el-select v-else-if="item.types === 'select'" clearable @clear="onSubmit" size="small"  v-model="ruleForm[item.value]" :placeholder="item.placeholder" style="width:100%;">
+	                    <el-option v-for="(opt,o) in item.options" :key="o" :label="opt" :value="opt">
+	                    </el-option>
+	                </el-select>
+                </el-form-item>
+				<el-form-item>
+				    <el-button type="primary" size="small" style="margin-left: 20px;" @click="onSubmit">查询</el-button>
+				</el-form-item>
+			</el-form>
+			<!--操作-->
+			<el-row>
+				<el-button type="text" icon="el-icon-circle-plus-outline" @click="handleAdd">新增</el-button>
+				<el-button type="text" icon="el-icon-edit-outline" @click="handleEdit">编辑</el-button>
+				<el-button type="text" icon="el-icon-delete" @click="handleAll('删除')">删除</el-button>
+				<el-button type="text" icon="el-icon-circle-close-outline" @click="handleAll('停用')">停用</el-button>
+				<el-button type="text" icon="el-icon-circle-check-outline" @click="handleAll('启用')">启用</el-button>				
+			</el-row>
+			<!--表格-->
+			<div class="table">
+				<el-table
+				ref="multipleTable"
+				:data="tableData"
+				tooltip-effect="dark"
+				style="width: 100%"
+				border
+				v-loading="loading"
+				size="small"
+				:row-class-name="setBgColor"
+				header-row-class-name="headBgColor hideCheckbox"
+				@selection-change="handleSelectionChange">
+					<el-table-column type="selection" width="55" align="center"></el-table-column>
+					<el-table-column v-for="(column,index) in columns" :key="column.value"
+					:label="column.label" :width="column.width ? column.width:''"
+					:prop="column.value" align="center"></el-table-column>
+				</el-table>
+				<div class="pageInation">
+					<el-pagination
+				        @size-change="handleSizeChange"
+					    @current-change="handleCurrentChange"
+					    :current-page="currentPage"
+					    :page-sizes="pageSizes"
+					    :page-size="pageSize"
+					    layout="total, sizes, prev, pager, next, jumper"
+					    :total="totalPage">
+				    </el-pagination>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+		<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+		<script type="text/javascript" src="../../lib/vue.js"></script>
+		<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+		<script type="text/javascript" src="../../js/common.js"></script>
+		<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+		<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+		<script type="text/javascript" src="../../api/easy.config.js"></script>
+		<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+		<script type="text/javascript">
+			var app = new Vue({
+				el: '#app',
+				data: {
+					loading: false,
+					multipleSelection: [], // 多选
+					tableData: [],
+					pageSizes: [10,20,30,50,100],
+					currentPage: 1, // 当前页码
+					pageSize: 10, // 默认一页显示数
+					totalPage: 1,
+					searchList: [
+						{
+							types: 'input',
+							label: '姓名',
+							width: '60px',
+							placeholder: '请输入姓名',
+							value: 'name'
+						},
+						{
+							types: 'input',
+							label: '电话',
+							width:'60px',
+							placeholder: '请输入电话',
+							value: 'telephone'
+						}
+					],
+					columns: [
+						{label: '姓名',value: 'name',width: 240},
+						{label: '身份证号',value: 'cardId'},
+						{label: '电话',value: 'telephone'},
+						{label: '户籍地址',value: 'household'},
+						{label: '车辆',value: 'vehicle'}
+					],
+					ruleForm: {
+						name: '',
+						telephone: ''
+					}
+				},
+				computed: {
+					handleId: function(){
+						var id = [];
+						if(this.multipleSelection.length > 0){
+							this.multipleSelection.forEach(function(item){
+								id.push(item.id)
+							})
+						}
+						return id;
+					}
+				},
+				created: function(){
+					this.getData();
+				},
+				methods:{
+					getData: function(){
+						var _this = this;
+						var data = {
+							name: this.ruleForm.name,
+							telephone: this.ruleForm.telephone,
+							pageScope: {
+								pageSize: this.pageSize, // 每页显示条数
+								pageNum: this.currentPage // 当前页数
+							}	
+						}
+						EasyAjax.ajax_Post_Json({
+							url: 'driver/queryPageList',
+							data: JSON.stringify(data)
+						},function(res){
+							if(res.success === true){
+								_this.tableData = res.data.list;
+								_this.totalPage = res.data.total;
+							}
+						})
+					},
+					onSubmit: function(){
+						this.currentPage = 1;
+						this.getData();
+					},
+					handleAdd: function(){
+						window.location.href="./driverHandle.html?pagetype=1";
+					},
+					handleEdit: function(){
+						if(this.multipleSelection.length === 0){
+							this.$message.error('请先勾选编辑列表');
+							return false;
+						}
+						
+						if(this.multipleSelection.length > 1){
+							this.$message.error('只能同时编辑一个列表信息');
+							return false;
+						}
+						var driverInfo = JSON.stringify(this.multipleSelection[0]);
+						localStorage.setItem('driverInfo', driverInfo);
+						window.location.href="./driverHandle.html?pagetype=2";
+					},
+					// 删除、停用、启用
+					handleAll: function(tag){
+						var _this = this;
+						var url = '';
+						if(tag === '删除'){
+							url = 'driver/deleteBatchIds';
+						}else if(tag === '停用'){
+							url = 'driver/closeBatchIds';
+						}else if(tag === '启用'){
+							url = 'driver/openBatchIds';
+						}
+						if(this.multipleSelection.length === 0){
+							this.$message.error('请先勾选'+tag+'列表');
+							return false;
+						}
+						this.$confirm('是否确定'+tag+'?', '提示', {
+				          confirmButtonText: '确定',
+				          cancelButtonText: '取消',
+				          type: 'warning'
+				        }).then(function(){
+				        	EasyAjax.ajax_Post_Json({
+								url: url,
+								data: JSON.stringify(_this.handleId)
+							},function(res){
+								if(res.success === true){
+									_this.getData();
+								}
+								_this.$message.success(res.message);
+							})
+				        }).catch(function(){
+				        });
+					},
+					// 一页显示几条
+					handleSizeChange: function(val){
+						this.pageSize = val;
+						this.getData();
+					},
+					// 切换当前页
+					handleCurrentChange: function(val){
+						this.currentPage = val;
+						this.getData();
+					},
+					handleSelectionChange: function(val){
+						this.multipleSelection = val;
+					},
+					// 开启，关闭背景色
+					setBgColor: function({row, rowIndex}){
+						if(row.active === 'N'){
+							return 'forbiddenUse'
+						}
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

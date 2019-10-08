@@ -1,0 +1,1107 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>潢川电子商务进农村</title>	
+	<link rel="stylesheet" href="../../lib/bootstrap-3.3.7-dist/css/bootstrap.css">
+	<link href="../../css/reset.css" rel="stylesheet" />
+	<link href="../../css/zheng/admin.css" rel="stylesheet" />
+	<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet" />
+	<link rel="stylesheet" type="text/css" href="../../css/view/mailTracking.css"/>
+</head>
+
+<body>
+	<div id="app" v-cloak>
+		<div class="demo-tab-nav">
+			<ul id="myTab" class="nav nav-tabs">
+				<li :class="{active: isSend}" @click="changeTab('sendmail')"><a href="javascript:;">我要寄件</a></li>
+				<li :class="{active: isTrack || isOrderNum}" @click="changeTab('track')"><a href="javascript:;">运单跟踪</a></li>
+			</ul>
+		</div>
+		<div id="myTabContent" class="tab-content">
+			<div v-show="isSend">
+				<el-form :model="ruleForm" :rules="rules" ref="ruleForm">
+					<h1 class="tabh1">寄件人信息</h1>
+					<div class="demo-input-suffix clearfix">
+						<div class="demo-input-single fl">
+							<el-form-item prop="senderName">
+								<div><i class="asterisk">*</i>姓名：</div>
+								<el-input v-model="ruleForm.senderName" placeholder="请填写联系人姓名"></el-input>
+							</el-form-item>
+						</div>
+						<div class="demo-input-single fr">
+							<el-form-item prop="senderCompany">
+								<div>公司：</div>
+								<el-input v-model="ruleForm.senderCompany" placeholder="请填写公司名称">
+								</el-input>
+							</el-form-item>
+						</div>
+					</div>
+					<div class="demo-input-suffix clearfix">
+						<div class="demo-input-single fl">
+							<el-form-item prop="senderMobilephone">
+								<div><i class="asterisk">*</i>手机：</div>
+								<el-input v-model="ruleForm.senderMobilephone" placeholder="请填写手机号码">
+								</el-input>
+							</el-form-item>
+						</div>
+	
+						<div class="demo-input-single fr">
+							<el-form-item prop="senderPhone">
+								<div>固话：</div>
+								<el-input v-model="ruleForm.senderPhone" placeholder="请填写固话号码"></el-input>
+							</el-form-item>
+						</div>
+					</div>
+					<div class="demo-input-suffix">
+						<div class="demo-input-single demo-input-special">
+							<el-form-item prop="senderAddress">
+								<div><i class="asterisk">*</i>地址：</div>
+								<el-cascader :placeholder="placeholder1" ref="cascaderAddr1" :options="platOptions" v-model="ruleForm.senderAddress"
+									:separator="separator" @active-item-change="handleItemChange1" @change="categoryChange1">
+								</el-cascader>
+							</el-form-item>
+						</div>
+					</div>
+					<div class="demo-input-suffix">
+						<div class="demo-input-single demo-input-special">
+							<el-form-item prop="senderStreet">
+								<div><i class="asterisk">*</i>详细地址：</div>
+								<el-input v-model="ruleForm.senderStreet" placeholder="请填写详细地址"></el-input>
+							</el-form-item>
+						</div>
+					</div>
+					<h1  class="tabh1">收件人信息</h1>
+					<div class="demo-input-suffix clearfix">
+						<div class="demo-input-single fl">
+							<el-form-item prop="recipientName">
+								<div><i class="asterisk">*</i>姓名：</div>
+								<el-input v-model="ruleForm.recipientName" placeholder="请填写联系人姓名"></el-input>
+							</el-form-item>
+						</div>
+						<div class="demo-input-single fr">
+							<el-form-item prop="recipientCompany">
+								<div>公司：</div>
+								<el-input v-model="ruleForm.recipientCompany" placeholder="请填写公司名称"></el-input>
+							</el-form-item>
+						</div>
+					</div>
+					<div class="demo-input-suffix clearfix">
+						<div class="demo-input-single fl">
+							<el-form-item prop="recipientMobilephone">
+								<div><i class="asterisk">*</i>手机：</div>
+								<el-input v-model="ruleForm.recipientMobilephone" placeholder="请填写手机号码"></el-input>
+							</el-form-item>
+						</div>
+						<div class="demo-input-single fr">
+							<el-form-item prop="recipientPhone">
+								<div>固话：</div>
+								<el-input v-model="ruleForm.recipientPhone" placeholder="请填写固话号码"></el-input>
+							</el-form-item>
+						</div>
+					</div>
+					<div class="demo-input-suffix">
+						<div class="demo-input-single demo-input-special">
+							<el-form-item prop="recipientAddress">
+								<span><i class="asterisk">*</i>地址：</span>
+								<el-cascader :placeholder="placeholder2" ref="cascaderAddr2" :options="platOptions" v-model="ruleForm.recipientAddress"
+									:separator="separator" @active-item-change="handleItemChange1" @change="categoryChange2">
+								</el-cascader>
+							</el-form-item>
+						</div>
+					</div>
+					<div class="demo-input-suffix">
+						<div class="demo-input-single demo-input-special">
+							<el-form-item prop="recipientStreet">
+								<div><i class="asterisk">*</i>详细地址：</div>
+								<el-input v-model="ruleForm.recipientStreet" placeholder="请填写详细地址"></el-input>
+							</el-form-item>
+						</div>
+					</div>
+					<h1 class="tabh1">货物信息</h1>
+					<div class="demo-input-suffix clearfix">
+						<div class="demo-input-single demo-input-spec fl tsqk">
+							<el-form-item prop="goodsWeight">
+								<div><i class="asterisk">*</i>重量：</div>
+								<el-input v-model="ruleForm.goodsWeight" placeholder="请填写货物重量">
+									<template slot="append">kg</template>
+								</el-input>
+							</el-form-item>
+						</div>
+						<div class="demo-input-single demo-input-spec tsqk fl ml40">
+							<el-form-item prop="goodsNumber">
+								<div><i class="asterisk">*</i>件数：</div>
+								<el-input v-model="ruleForm.goodsNumber" placeholder="请填写货物件数">
+									<template slot="append">件</template>
+								</el-input>
+							</el-form-item>
+						</div>
+					</div>
+					<div class="demo-input-suffix clearfix">
+						<div class="demo-input-single demo-input-spec fl">
+							<div class="clearfix">
+								<div class="fl" style="margin-bottom: 10px;">体积：</div>
+								<ul class="nav nav-tabs fl">
+									<li class="active"><a href="#tj" data-toggle="tab">体积</a></li>
+									<li><a href="#ckg" data-toggle="tab">长宽高</a></li>
+								</ul>
+							</div>
+							<div class="tab-content">
+								<div class="demo-input-spec tab-pane fade in active" id="tj">
+									<el-form-item prop="goodsVolume">
+										<el-input v-model="ruleForm.goodsVolume" placeholder="请输入体积">
+											<template slot="append">m²</template>
+										</el-input>
+									</el-form-item>
+								</div>
+								<div class="tab-pane fade clearfix" id="ckg">
+									<div class="demo-input-spec fl">
+										<el-form-item prop="goodsLength">
+											<el-input v-model="ruleForm.goodsLength" placeholder="请输入长">
+												<template slot="append">m</template>
+											</el-input>
+										</el-form-item>
+									</div>
+									<div class="demo-input-spec mt10 fl">
+										<el-form-item prop="goodsWidth">
+											<el-input v-model="ruleForm.goodsWidth" placeholder="请输入宽">
+												<template slot="append">m</template>
+											</el-input>
+										</el-form-item>
+									</div>
+									<div class="demo-input-spec mt10 fl">
+										<el-form-item prop="goodsHeight">
+											<el-input v-model="ruleForm.goodsHeight" placeholder="请输入高">
+												<template slot="append">m</template>
+											</el-input>
+										</el-form-item>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="demo-input-suffix clearfix">
+						<div class="demo-input-single demo-input-spec2 fl">
+							<el-form-item prop="goodsType">
+								<div><i class="asterisk">*</i>货物类型：</div>
+								<el-select v-model="ruleForm.goodsType" placeholder="请选择">
+									<el-option v-for="item in options2" :label="item.name" :value="item.id">
+									</el-option>
+								</el-select>
+							</el-form-item>
+						</div>
+						<div class="demo-input-single demo-input-spec2 fl ml40">
+							<el-form-item prop="goodsName">
+								<div>货物名称：</div>
+								<el-input v-model="ruleForm.goodsName" placeholder="请输入货物名称"></el-input>
+							</el-form-item>
+						</div>
+						<div class="demo-input-single demo-input-spec2 fl ml40">
+							<el-form-item prop="paymentMethod">
+								<div><i class="asterisk">*</i>付款方式：</div>
+								<el-select v-model="ruleForm.paymentMethod" placeholder="请选择">
+									<el-option v-for="item in options3" :label="item.name" :value="item.id">
+									</el-option>
+								</el-select>
+							</el-form-item>
+						</div>
+						<div class="demo-input-single demo-input-spec2 fr">
+							<el-form-item prop="goodsMoney">
+								<div>金额：</div>
+								<el-input v-model="ruleForm.goodsMoney" placeholder="请输入货物金额">
+									<template slot="append">元</template>
+								</el-input>
+							</el-form-item>
+						</div>
+					</div>
+					<div class="demo-input-suffix">
+						<div class="demo-input-single demo-input-special">
+							<el-form-item prop="expressCompany">
+								<div>备注：</div>
+								<el-input v-model="ruleForm.expressCompany" placeholder="请输入备注"></el-input>
+							</el-form-item>
+						</div>
+					</div>
+					<div class="demo-btn mt40">
+						<el-button type="submit" @click="saveForm">保存</el-button>
+					</div>
+				</el-form>
+			</div>
+			<div v-show="isTrack || isOrderNum">				
+				<div class="demo-input-search mt20">
+					<el-input placeholder="请输入运单号" v-model="expressNumber" class="input-with-select">
+						<el-button slot="append" @click="searchMail" icon="el-icon-search"></el-button>
+					</el-input>
+				</div>
+				<h1 class="tabh1">{{!!orderNum? '运单信息' : '包裹信息'}}</h1>
+				<!--运单信息-->
+				<template v-if="orderNum">
+					<div class="waybill" v-if="goodsInfo">
+						<div class="bill-address mt10">
+							<span>{{goodsInfo.senderAddress}}{{goodsInfo.senderStreet}}</span>
+							<img src="../../img/jiantou.png" alt="">
+							<span>{{goodsInfo.recipientAddress}}{{goodsInfo.recipientStreet}}</span>
+						</div>
+						<p>{{goodsInfo.expressNumber}}</p>
+						<div class="bill-time">
+							<label>{{goodsInfo.createtime}}</label><span>{{goodsInfo.isCompleted}}</span>
+						</div> 
+					</div>
+					<div class="waybill-info">
+						<ul v-if="goodsList.length>0">
+							<li v-for="(item,idx) in goodsList" :key="idx">
+								<div class="time-bg clearfix">
+									<span>{{item.time | getDate}} {{item.week}}</span>
+									<i><img src="../../img/pulldown.png" alt=""></i>
+								</div>
+								<ul>
+									<li v-for="(subItem,idx) in item.list" :key="'sub'+idx">{{subItem.hour | getHour}}<span>{{subItem.tab}}</span></li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+					<p v-if="!goodsInfo && goodsList.length===0" style="margin-top:60px;text-align: center;font-size:18px;">暂无运单信息</p>
+				</template>
+				<!--表格信息-->
+				<template v-else>
+					<div class="demo-tab-table mt60">
+						<ul class="nav nav-tabs">
+							<li class="active"><a href="#deliver" data-toggle="tab">{{isVip? '我要揽件': '我要寄件'}}</a></li>
+							<!-- <li><a href="#arrival" data-toggle="tab">到货</a></li> -->
+						</ul>
+						<div class="tab-content">
+							<div class="tab-pane fade in active" id="deliver">
+								<el-table ref="multipleTable" :data="tableData" tooltip-effect="dark" style="width: 100%"
+									border v-loading="loading" size="small" header-row-class-name="headBgColor">
+									<el-table-column v-if="isVip" fixed="right" label="操作">
+										<template slot-scope="scope">
+											<el-button v-if="scope.row.collected === '待揽收'" @click="collect(scope.row)" type="text" size="small">揽收
+											</el-button>
+											<el-button @click="printMail(scope.row)" type="text" size="small">打印</el-button>
+										</template>
+									</el-table-column>
+									<el-table-column label="单号">
+										<template slot-scope="scope">
+											<el-button @click="dhClick(scope.row)" type="text" size="small">
+												{{ scope.row.expressNumber }}</el-button>
+										</template>
+									</el-table-column>
+									<el-table-column v-for="(column,index) in columns" :key="column.value"
+										:label="column.label" :width="column.width ? column.width:''" :prop="column.value"
+										align="center">
+									</el-table-column>
+								</el-table>
+								<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
+									:current-page="currentPage" :page-sizes="sizes" :page-size="size"
+									layout="total, sizes, prev, pager, next, jumper" :total="total">
+								</el-pagination>
+							</div>
+						</div>
+					</div>
+				</template>
+			</div>
+			<!--打印信息-->
+			<div class="el-mail" id="printPage">
+				<template v-if="printMsg">
+					<div class="line-1 clearfix" style="height:51px;">
+						<img src="../../img/yt-logo.png" class="fl" style="width: 74px;height:auto;">
+						<!--<div class="money fl">代收货款：<span>￥ 300</span></div>
+						<div class="m-kind fr">代收<br>货款</div>-->
+					</div>
+					<div class="line-2" style="height:56px;">{{printMsg.shortAddress}}</div>
+					<div class="line-3 clearfix" style="height:36px;">
+						<!--<span class="fl">区域件</span>-->
+						<img class="fr" id="imgcode1">
+					</div>
+					<div class="line-4 clearfix" style="height:55px;">
+						<span class="sjr-s fl">收</span>
+						<div class="sjr-info fl" style="width: 340px;
+						font-size: 11pt;">
+							<p><span>{{printMsg.recipientName}}</span><span class="ml20">{{printMsg.recipientMobilephone}}</span><span class="ml20">{{printMsg.recipientPhone}}</span></p>
+							<p>{{printMsg.recipientAddress}}{{printMsg.recipientStreet}}</p>
+						</div>
+					</div>
+					<div class="line-5 clearfix" style="height:44px;">
+						<span class="sjr-s fl">寄</span>
+						<div class="sjr-info fl" style="width: 340px;
+						font-size: 10pt;margin-top:2px;">
+							<p><span>{{printMsg.senderName}}</span><span class="ml20">{{printMsg.senderMobilephone}}</span><span class="ml20">{{printMsg.senderPhone}}</span></p>
+							<p>{{printMsg.senderAddress}}{{printMsg.senderStreet}}</p>
+						</div>
+					</div>
+					<div class="line-6" style="height:85px;text-align: center;">
+						<div style="display: inline-block;margin-top: 7px;">
+							<img id="imgcode2">
+						</div>
+					</div>
+					<div class="line-7 clearfix" style="height:91px;">
+						<div class="sfwd fl">
+							<p>{{printMsg.date}}</p>
+							<label>{{printMsg.timedetail}}</label>
+							<p><span>打印时间</span></p>
+							<h1>始发网点</h1>
+						</div>
+						<div class="ewm fl">
+								<div id="output" style="display:none"></div>
+								<img id="image" src="" style="width: 80px;height:80px;" />
+							</div>
+						<div class="jjxx fl">
+							<p>快件送达收件人地址，经收件人或收件人（寄件人）允许的代收人签字，视为送达。</p>
+						</div>
+					</div>
+					<div class="line-8 clearfix" style="height:36px;">
+						<img src="../../img/yt-logo.png" class="fl" style="margin-left: 5px;width: 68px;height:auto;">
+						<div class="txm-s fl" style="margin-left: 30px;">
+							<img id="imgcode3">
+						</div>
+					</div>
+					<div class="wr-spec clearfix" style="width:377px;border-bottom: dashed 1px #89827c;height:83px;">
+						<div class="fl">
+							<div class="line-4 clearfix" style="width:295px;height:43px;">
+								<span class="sjr-s fl">收</span>
+								<div class="sjr-info fl" style="width:260px;">
+									<p><span>{{printMsg.recipientName}}</span><span class="ml20">{{printMsg.recipientMobilephone}}</span>
+									</p>
+									<p>{{printMsg.recipientAddress}}{{printMsg.recipientStreet}}</p>
+								</div>
+							</div>
+							<div class="line-5 clearfix" style="border-bottom:none;width:295px;height:41px;">
+								<span class="sjr-s fl">寄</span>
+								<div class="sjr-info fl" style="width:260px;">
+									<p><span>{{printMsg.senderName}}</span><span class="ml20">{{printMsg.senderMobilephone}}</span>
+									</p>
+									<p>{{printMsg.senderAddress}}{{printMsg.senderStreet}}</p>
+								</div>
+							</div>
+						</div>
+						<div class="fr" style="width:82px;border-left:solid 1px #89827c;height: 82px;line-height: 41px;
+						text-align: center;">
+							商家自<br>定义区
+						</div>
+					</div>
+					<div class="line-9 clearfix" style="height:33px;">
+						<label>圆通速递</label>
+						<b>{{printMsg.mailNo}}</b>
+					</div>
+					<div class="line-9 clearfix"
+						style="height:21px;line-height:21px;letter-spacing: -1.4px;font-size:8pt;padding-left: 10px;">
+						<span class="fl">打印时间：<span>{{printMsg.time}}</span></span>
+						<span class="fr" style="margin-right:10px;">
+							<span>数量：{{printMsg.goodsNumber}}件</span>
+							<span style="margin-left: 10px;">重量：{{printMsg.goodsWeight}}kg</span>
+						</span>
+						
+					</div>
+					<div class="line-4 clearfix" style="height:44px;">
+						<span class="sjr-s fl">收</span>
+						<div class="sjr-info fl">
+							<p><span>{{printMsg.recipientName}}</span><span class="ml20">{{printMsg.recipientMobilephone}}</span><span class="ml20">{{printMsg.recipientPhone}}</span></p>
+							<p>{{printMsg.recipientAddress}}{{printMsg.recipientStreet}}</p>
+						</div>
+					</div>
+					<div class="line-5 clearfix" style="border:0;height:44px;margin-top: 2px;">
+						<span class="sjr-s fl">寄</span>
+						<div class="sjr-info fl">
+							<p><span>{{printMsg.senderName}}</span><span class="ml20">{{printMsg.senderMobilephone}}</span><span class="ml20">{{printMsg.senderPhone}}</span></p>
+							<p>{{printMsg.senderAddress}}{{printMsg.senderStreet}}</p>
+						</div>
+					</div>
+				</template>
+			</div>			
+		</div>
+		<el-dialog title="选择收货网点" :visible.sync="dialogVisible" width="40%" center>
+		  	<el-checkbox-group v-model="checkList" @change="changeWare">
+			    <el-checkbox v-for="(item,idx) in workOptions" :label="item.id">{{item.name}}</el-checkbox>
+			</el-checkbox-group>
+		  	<span slot="footer" class="dialog-footer">
+				<el-button type="primary" @click="submit(true)">确 定</el-button>
+		  	</span>
+		</el-dialog>
+
+	</div>
+	<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+	<script type="text/javascript" src="../../lib/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+	<script src="../../lib/JsBarcode-master/JsBarcode.all.js"></script>
+	<!--生成条形码-->
+	<script src="../../lib/jquery.qrcode.min.js"></script>
+	<!--生成二维码-->
+	<script src="../../js/zheng/Print.js"></script>
+	<!-- 打印 -->
+	<script type="text/javascript" src="../../lib/vue.js"></script>
+	<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+	<script type="text/javascript" src="../../js/common.js"></script>
+	<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+	<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+	<script type="text/javascript" src="../../api/easy.config.js"></script>
+	<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+	<script type="text/javascript">
+		var tabType = _common.getUrlParam('type') || 'track'; // 获取url上的type, sendmail：我要寄件	track:运单追踪
+		var orderNum = _common.getUrlParam('expressNumber'); // 首页点击马上查询url上会带运单号
+		var app = new Vue({
+		    el: "#app",
+		    data: function () {
+		        return {
+		        	tabtype: tabType,
+		        	orderNumber: orderNum,
+		        	orderNum: orderNum,
+		        	isVip: false,
+		        	dialogVisible: false,
+		        	checkList: [],
+		        	workOptions: [],
+		            expressNumber: '',		
+		            placeholder1: '请选择',
+		            placeholder2: '请选择',
+		            separator: '',
+		            platOptions: [], // 寄件人
+		            platOptions2: [], // 收件人
+		            props: {
+		                label: 'regionName',
+		                value: 'id',
+		                children: 'child'
+		            },
+		            ruleForm: {
+		                senderName: '',
+		                senderCompany: '',
+		                senderMobilephone: '',
+		                senderPhone: '',
+		                senderAddress: [],
+		                senderStreet: '',
+		                recipientName: '',
+		                recipientMobilephone: '',
+		                recipientCompany: '',
+		                recipientPhone: '',
+		                recipientAddress: [],
+		                recipientStreet: '',		
+		                goodsName: '',
+		                goodsWeight: '',
+		                goodsNumber: '',
+		                goodsVolume: '',
+		                goodsType: '',
+		                goodsLength: '',
+		                goodsWidth: '',
+		                goodsHeight: '',
+		                paymentMethod: '',
+		                goodsMoney: '',
+		                expressCompany: '',
+		                selectedOptions1: '',
+		                selectedOptions2: '',
+		            },
+		            rules: {
+		            	senderAddress: [
+		            		{	
+		            			type: 'array',
+		                        required: true,
+		                        message: '寄件人地址不能为空！',
+		                        trigger: 'blur'
+		                    }
+		            	],
+		            	recipientAddress: [
+		            		{	
+		            			type: 'array',
+		                        required: true,
+		                        message: '收件人地址不能为空！',
+		                        trigger: 'blur'
+		                    }
+		            	],
+		                senderName: [{
+		                        required: true,
+		                        message: '寄件人姓名不能为空！',
+		                        trigger: 'blur'
+		                    },
+		                    {
+		                        pattern: /^[\u2E80-\u9FFF]+$/,
+		                        message: '收件人姓名只能输入汉字！',
+		                        trigger: 'blur'
+		                    }
+		                ],
+		                senderMobilephone: [{
+		                        required: true,
+		                        message: '寄件人手机号码不能为空！',
+		                        trigger: 'blur'
+		                    },
+		                    {
+		                        pattern: /^1[34578]\d{9}$/,
+		                        message: '手机号码格式不正确',
+		                        trigger: 'blur'
+		                    }
+		                ],
+		                senderPhone: [{
+		                        required: false,
+		                    },
+		                    {
+		                        pattern: /^((\d{3,4})-)(\d{7,8})(-(\d{3,}))?$/,
+		                        message: '例：025-88888888-8888，区号必须要输入，没有分机号可不输！',
+		                        trigger: 'blur'
+		                    }
+		                ],
+		                senderAddress: [{
+		                    required: true,
+		                    message: '寄件人地址不能为空！',
+		                    trigger: 'blur'
+		                }],
+		                senderStreet: [{
+		                    required: true,
+		                    message: '寄件人详细不能为空！',
+		                    trigger: 'blur'
+		                }],
+		
+		                recipientName: [{
+		                        required: true,
+		                        message: '收件人姓名不能为空！',
+		                        trigger: 'blur'
+		                    },
+		                    {
+		                        pattern: /^[\u2E80-\u9FFF]+$/,
+		                        message: '收件人姓名只能输入汉字！',
+		                        trigger: 'blur'
+		                    }
+		                ],
+		                recipientMobilephone: [{
+		                        required: true,
+		                        message: '收件人手机号码不能为空！',
+		                        trigger: 'blur'
+		                    },
+		                    {
+		                        pattern: /^1[34578]\d{9}$/,
+		                        message: '手机号码格式不正确',
+		                        trigger: 'blur'
+		                    }
+		                ],
+		                recipientPhone: [{
+		                        required: false,
+		                    },
+		                    {
+		                        pattern: /^((\d{3,4})-)(\d{7,8})(-(\d{3,}))?$/,
+		                        message: '例：025-88888888-8888，区号必须要输入，没有分机号可不输！',
+		                        trigger: 'blur'
+		                    }
+		                ],
+		                recipientAddress: [{
+		                    required: true,
+		                    message: '收件人地址不能为空！',
+		                    trigger: 'blur'
+		                }],
+		                recipientStreet: [{
+		                    required: true,
+		                    message: '收件人详细地址不能为空！',
+		                    trigger: 'blur'
+		                }],
+		
+		
+		                goodsWeight: [{
+		                    required: true,
+		                    message: '货物重量不能为空！',
+		                    trigger: 'blur'
+		                }],
+		                goodsNumber: [{
+		                    required: true,
+		                    message: '货物不能为空！',
+		                    trigger: 'blur'
+		                }],
+		                goodsType: [{
+		                    required: true,
+		                    message: '货物类型不能为空！',
+		                    trigger: 'blur'
+		                }],
+		                paymentMethod: [{
+		                    required: true,
+		                    message: '付款方式不能为空！',
+		                    trigger: 'blur'
+		                }],
+		            },
+		            options2: [],	
+		            options3: [{
+		                    id: "0",
+		                    name: "寄付现结"
+		                },
+		                {
+		                    id: "1",
+		                    name: "到付"
+		                },
+		                {
+		                    id: "2",
+		                    name: "月结"
+		                }
+		            ],
+		            loading: false,
+		            tableData: [],
+		            columns: [{
+		                    label: '状态',
+		                    value: 'collected'
+		                },
+		                {
+		                    label: '姓名',
+		                    value: 'senderName'
+		                },
+		                {
+		                    label: '手机',
+		                    value: 'senderMobilephone'
+		                },
+		                {
+		                    label: '货物类型',
+		                    value: 'goodsType'
+		                },
+		                {
+		                    label: '货物名称',
+		                    value: 'goodsName'
+		                },
+		                {
+		                    label: '重量（kg）',
+		                    value: 'goodsWeight'
+		                },
+		                {
+		                    label: '体积（m3）',
+		                    value: 'goodsVolume'
+		                },
+		                {
+		                    label: '公司',
+		                    value: 'senderCompany'
+		                },
+		                {
+		                    label: '固话',
+		                    value: 'senderPhone'
+		                },
+		                {
+		                    label: '到货地址',
+		                    value: 'recipientAddress'
+		                },
+		                {
+		                    label: '详细地址',
+		                    value: 'recipientStreet'
+		                }
+		            ],
+		            currentPage: 1,
+		            total: 0,
+		            size: 5,
+		            page: 1,
+		            sizes: [5, 10, 15, 20],
+		            printMsg: null, // 打印信息
+		            goodsInfo: null, //运单信息
+		            goodsList: [] // 运单信息列表
+					
+		        }
+		    },
+		    computed: {
+		    	isSend: function(){
+		    		return this.tabtype === 'sendmail'
+		    	},
+		    	isTrack: function(){
+		    		return this.tabtype === 'track'
+		    	},
+		    	isOrderNum: function(){
+		    		return !!this.orderNumber
+		    	}
+		    },
+		    filters:{
+		    	getDate: function(val){
+		    		var arr = val.split(' ');
+		    		return arr[0]
+		    	},
+		    	getHour: function(val){
+		    		var arr = val.split(' ');
+		    		return arr[1]
+		    	}
+		    },
+		    created() {
+		    	// 判断是否是会员
+		    	var userInfo = localStorage.getItem("userInfo");
+				if(userInfo){
+					var user = JSON.parse(userInfo);
+					if(user.isEmployee === 'Y') this.isVip = true;
+				}
+				console.log(123, this.orderNum)
+		    	
+		    	if(this.orderNum){ // 此时是运单查询页
+		    		this.expressNumber = this.orderNum;
+		    		this.getOrderNum();
+		    	}
+		    	
+		    	this.getTableData(this.isvip); // 获取表格数据
+		    	
+		    	this.getPosition(); // 获取省市区三级联动数据
+		    	this.findNativePlace(); // 获取货物类型
+		    	
+		    	if(!this.isVip){ //非会员需要选择网点
+		    		this.getWareHouse();
+		    	}
+		    },
+		    methods: {
+		    	changeTab: function(tab){
+		    		if(this.orderNum){
+		    			if(tab === 'sendmail'){
+		    				this.tabtype = tab;
+		    				this.orderNumber = false;
+		    			}else{
+		    				this.tabtype = tab;
+		    				this.orderNumber = true;
+		    			}
+		    			
+		    		}else{
+		    			this.tabtype = tab;
+		    		}
+		    		
+		    	},
+		    	//点击保存请求数据
+		        submit: function (type) {
+		            var _this = this;
+		            var sendAdd = this.senderAddressDetail;
+		            var rectAdd = this.recipientAddressDetail;
+		            var list = {
+		                "expressCompany": _this.ruleForm.expressCompany,
+		                "senderName": _this.ruleForm.senderName,
+		                "senderMobilephone": _this.ruleForm.senderMobilephone,
+		                "senderPhone": _this.ruleForm.senderPhone,
+		                "senderCompany": _this.ruleForm.senderCompany,
+		                senderProvince: sendAdd[0],
+		                "senderAddress": sendAdd[0]+','+sendAdd[1]+','+sendAdd[2],
+		                "senderStreet": _this.ruleForm.senderStreet,
+		                "recipientName": _this.ruleForm.recipientName,
+		                "recipientMobilephone": _this.ruleForm.recipientMobilephone,
+		                "recipientPhone": _this.ruleForm.recipientPhone,
+		                "recipientCompany": _this.ruleForm.recipientCompany,
+		                recipientProvince: rectAdd[0],
+		                "recipientAddress": rectAdd[0]+','+rectAdd[1]+','+rectAdd[2],
+		                "recipientStreet": _this.ruleForm.recipientStreet,
+		                "goodsName": _this.ruleForm.goodsName,
+		                "goodsWeight": _this.ruleForm.goodsWeight,
+		                "goodsNumber": _this.ruleForm.goodsNumber,
+		                "goodsVolume": _this.ruleForm.goodsVolume,
+		                "goodsType": _this.ruleForm.goodsType,
+		                "paymentMethod": _this.ruleForm.paymentMethod,
+		                "goodsLength": _this.ruleForm.goodsLength,
+		                "goodsWidth": _this.ruleForm.goodsWidth,
+		                "goodsHeight": _this.ruleForm.goodsHeight,
+		                "goodsMoney": _this.ruleForm.goodsMoney,
+		            };
+		            
+		            if(type){ // 此时是点击弹出框确定按钮
+		            	if(this.checkList.length===0){
+		            		this.$message.warning('请选择网点');
+		            		return false;
+		            	}
+		            }
+		            if(this.checkList.length!==0){
+		            	list.warehouseId = this.checkList[0]
+		            }
+		            		            
+		            EasyAjax.ajax_Post_Json({
+						url: 'express/add',
+						data: JSON.stringify(list)
+					},function(res){
+						if(res.success === true){
+							if(type) _this.dialogVisible = false; // 关闭弹出框
+							_this.$message.success(res.message);
+							setTimeout(function(){
+								window.location.href = "index.html";
+							},1000)
+							
+						}else{
+							_this.$message.error(res.message);
+						}
+					})
+		        },
+		        // 点击保存运单号
+		        saveForm: function () {
+		            var _this = this;
+		            this.$refs.ruleForm.validate((valid) => {
+		                if (valid) {
+		                	if(!_this.isVip && this.checkList.length===0){ // 非会员并且没有选中网点
+		                		_this.dialogVisible = true;
+		                		
+		                	}else{
+		                		_this.submit();
+		                	}
+		                    
+		                }
+		            });
+		        },
+		        //搜索运单
+		        searchMail: function () {
+		        	if(!this.expressNumber){
+		        		this.$message.error('请输入完整的运单号');
+		        		return false;
+		        	}
+		        	
+		        	if(this.orderNum){ // 运单信息查询页
+		        		this.getOrderNum();
+		        		
+		        	}else{// 运单追踪页
+						window.location.href = "./mailLook.html?expressNumber=" + this.expressNumber;
+			        }
+		        	
+		        	
+		        },
+		        // 获取表格数据
+		    	getTableData: function(isVip) {
+		            var _this = this;
+		            var baseValue = {
+		                pageSize: this.size,
+		                pageNum: this.page
+		            }
+		            var url = "";
+		            if (this.isVip) {
+		                url = "express/findMyAreaExpress";
+		            } else {
+		                url = "express/findMyselfExpress";
+		            }
+		            EasyAjax.ajax_Post_Json({
+						url: url,
+						data: JSON.stringify(baseValue)
+					},function(res){
+						if(res.success === true){
+							var d = res.data;
+							d.list.forEach(function(item){
+								item.collected = item.collected === 'Y'? '已揽收':'待揽收'
+							})
+	                        _this.tableData = d.list;
+	                        _this.total = d.total;
+						}else{
+							_this.$message.error(res.message);
+						}
+					})
+		        },
+		        // 点击单号跳页
+		        dhClick: function(val) {
+		            window.location.href = "./mailLook.html?expressNumber=" + val.expressNumber;
+		        },
+		        // 每页显示条数
+		        handleSizeChange(val) {
+		            this.size = val;
+		            this.getTableData();
+		            
+		        },
+		        // 当前页
+		        handleCurrentChange(val) {
+		            this.page = val;
+		            this.getTableData();
+		        },
+		        getPosition: function(val,options){
+		        	var _this = this;
+		        	var id = '';
+		        	if(!val){ // 加载
+		        		id = '7459';	
+		        	}else if(val.length === 1){ //加载二级数据
+		        		id = val[0];
+		        		
+		        	}else{ // 加载三级数据
+		        		
+		        		id = val[1];
+		        	}
+		        	EasyAjax.ajax_Get_Json({
+						url: 'region/queryRegions/'+id
+					},function(res){
+						if(res.success === true){
+							if(!val) { //初始化加载   查询省份数据
+					            _this.platOptions = res.data.map((e) => {
+					              return {value: e.id, label: e.regionName, children: []}
+					            });
+					            
+					          } else if (val.length === 1) { //加载二级    查询该省下市级数据
+					            _this.platOptions.map((item) => {
+					              if(item.value === val[0]) {
+					                item.children = res.data.map((e) => {
+					                  return {value: e.id, label: e.regionName, children: []}
+					                })
+					              }
+					            })
+					          } else {  //加载3级   查询该省市下县级数据
+					            _this.platOptions.map((item) => {
+					              if(item.value === val[0]) {
+					                item.children.map((childItem) => {
+					                  if(childItem.value === val[1]){
+					                    childItem.children = res.data.map((e) => {
+					                      return {value: e.id, label: e.regionName}
+					                    })
+					                  }
+					                })
+					              }
+					            })
+					          }
+						}
+					})
+		        },
+		        handleItemChange1: function(val){
+		        	this.getPosition(val);		        	
+		        },
+
+		        categoryChange1: function(value) {
+		        	this.senderAddressDetail = this.$refs['cascaderAddr1'].currentLabels;
+		        },
+		        categoryChange2: function(value) {
+		        	this.recipientAddressDetail = this.$refs['cascaderAddr2'].currentLabels;
+		        },
+		        //货物类型
+		        findNativePlace: function () {
+		            var _this = this;
+		            var list = {
+		                "type": 1
+		            };
+		            EasyAjax.ajax_Post_Json({
+						url: 'dict/findNativePlace',
+						data: JSON.stringify(list)
+					},function(res){
+						if(res.success === true){
+							var data = res.data;
+		                    var result = [];
+		                    for (var i = 0; i < data.length; i++) {
+		                        result.push({
+		                        	id: i,
+		                        	name: data[i]
+		                        });
+		                    }
+		
+		                    _this.options2 = result;
+						}else{
+							_this.$message.error(res.message);
+						}
+					})
+		        },
+		        getWareHouse: function(){
+		        	var _this = this;
+					EasyAjax.ajax_Get_Json({
+						url: 'appWarehouse/findAll'
+					},function(res){
+						if(res.success === true){
+							_this.workOptions = res.data;
+						}
+					})
+		       	},
+		       	changeWare: function(val){
+		       		this.checkList = []
+		       		this.checkList.push(val[val.length-1])
+		       	},
+		        //揽收
+		        collect: function (val) {
+		            window.location.href = "./collect.html?expressNumber=" + val.expressNumber;
+		        },
+		        //打印
+		        printMail: function(val) {
+					var _this = this;
+					EasyAjax.ajax_Get_Json({
+						url: 'operation/printExpressSheet?expressNumber='+val.expressNumber,
+					},function(res){
+						if(res.success === true){
+							var d = res.data;
+							var printMsg = d.Express;
+							printMsg.shortAddress = d.result.distributeInfo.shortAddress; // 三段码
+							printMsg.mailNo = d.result.mailNo;
+							printMsg.time = _this.getNowDate().time;
+							printMsg.date = _this.getNowDate().dtime;
+							printMsg.timedetail = _this.getNowDate().htime;
+							_this.printMsg = printMsg;
+							
+							_this.$nextTick(function () {
+								// 二维码
+								$("#output").qrcode({
+						            width: 80, //宽度 
+						            height: 80, //高度 
+						            text: JSON.stringify(d.result.qrCode) //任意内容 
+						        });
+						        var img = document.getElementById("image"); // get image element
+						        var canvas  = document.getElementsByTagName("canvas")[0];  // get canvas element
+						        img.src = canvas.toDataURL();
+								
+								// 条形码
+						        JsBarcode("#imgcode1", d.result.originateOrgCode, {
+						            format: "code128a", //选择要使用的条形码类型
+						            width: 1.2, //设置条之间的宽度
+						            height: 20, //高度
+						            lineColor: "#333", //设置条和文本的颜色。
+						            fontSize: 12, //设置文本的大小
+						            displayValue: true, //是否在条形码下方显示文字
+						            margin: 0, //设置条形码周围的空白边距
+						            textMargin: 0 //设置条形码和文本之间的间距
+						        });
+						        
+						        JsBarcode("#imgcode2",d.result.mailNo, {
+						            format: "code128a", //选择要使用的条形码类型
+						            width: 1.5, //设置条之间的宽度
+						            height: 38, //高度
+						            fontSize: 20, //设置文本的大小
+						            lineColor: "#333", //设置条和文本的颜色。
+						            displayValue: true, //是否在条形码下方显示文字
+						            margin: 2 //设置条形码周围的空白边距
+						        });
+						        JsBarcode("#imgcode3", d.result.mailNo, {
+						            format: "code128a", //选择要使用的条形码类型
+						            width: 1.2, //设置条之间的宽度
+						            height: 13, //高度
+						            lineColor: "#333", //设置条和文本的颜色。
+						            fontSize: 12, //设置文本的大小
+						            displayValue: true, //是否在条形码下方显示文字
+						            margin: 0, //设置条形码周围的空白边距
+						            textMargin: 0 //设置条形码和文本之间的间距
+						        });
+						        
+						        // 打印
+						        Print('#printPage');						        
+						  })	
+						}
+					})
+		       },
+		        getNowDate: function(){
+		        	var date = new Date();
+		        	var y = date.getFullYear();
+		        	var m = this.toDouble(date.getMonth()+1);
+		        	var d = this.toDouble(date.getDate());
+		        	var hour = this.toDouble(date.getHours());
+		        	var minutes = this.toDouble(date.getMinutes());
+		        	var seconds = this.toDouble(date.getSeconds());
+		        	return {
+		        		time: y+' / '+m+' / '+d+' '+hour+' : '+minutes+' : '+seconds,
+		        		dtime: y+'/'+m+'/'+d,
+		        		htime: hour+':'+minutes+':'+seconds
+		        	}
+		        },
+		        toDouble: function(n){
+		        	return n<10 ? '0'+n:n
+		        },
+		        getOrderNum: function(){
+		        	var _this = this;
+					EasyAjax.ajax_Get_Json({
+						url: 'goods/findDetailsByExpressNumber?expressNumber='+this.expressNumber
+					},function(res){
+						if(res.success === true){
+							var d = res.data;
+							if(d.goods){
+								d.goods.isCompleted = d.goods.completed === 'N'?'未签收':'已签收'
+							}							
+							// 处理日期相同项
+							_this.goodsInfo = d.goods;
+							_this.goodsList = _this.concatArr(d.operations);
+							
+						}
+					})
+		        },
+		        concatArr: function(obj){
+		        	var temp = obj.reduce(function(acc, cur){
+						if(acc[cur.week]){
+							acc[cur.week].push({
+								hour: cur.time, 
+								tab: cur.tab
+							})
+						}else{
+							acc[cur.week] = [{hour: cur.time, tab: cur.tab}]
+						}
+						return acc;
+					},{})
+	
+					return Object.keys(temp).map(key => {
+					        return {
+					            list: temp[key],
+					            week: key,
+					            time: temp[key][0].hour
+					        }
+					    })
+			    }
+		    }
+		
+		})
+	</script>
+</body>
+
+</html>

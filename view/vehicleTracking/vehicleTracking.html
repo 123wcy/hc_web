@@ -1,0 +1,392 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>用户权限管理系统</title>
+	<link href="../../css/bootstrap.min.css" rel="stylesheet" />
+	<link href="../../css/reset.css" rel="stylesheet" />
+	<link href="../../css/style.css" rel="stylesheet" />
+	<link href="../../css/zheng/admin.css" rel="stylesheet" />
+	<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet" />
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=9ZQIqbGfMnbch4DLAMGk98YwIRgruIpi">
+	</script>
+	<style>
+		.table .headBgColor th {
+			background: #eef5fd;
+			color: #586276;
+		}
+
+		[v-cloak] {
+			display: none;
+		}
+
+		#vehicleMap {
+			width: auto;
+			height: 100%;
+			overflow: hidden;
+			margin: 0;
+			font-family: "微软雅黑";
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app" v-cloak>
+		<section id="main">
+			<section id="content" class="clearfix">
+				<div class="rightSideBar col-md-4 fl">
+					<!--查询-->
+					<!-- <el-form :inline="true" :model="ruleForm" ref="ruleForm" class="demo-form-inline"> -->
+						<!-- <el-form-item v-for="item in searchList" :label="item.label" :prop="item.value" -->
+							<!-- :label-width="item.width?item.width:'80px'" :key="item.value"> -->
+							<!-- 输入框 -->
+							<!-- <el-input v-if="item.types === 'input'" size="small" v-model="ruleForm[item.value]":placeholder="item.placeholder"></el-input> -->
+							<!-- <el-input v-if="item.types === 'input'" size="small" v-model="plateNumber" -->
+								<!-- :placeholder="item.placeholder"></el-input> -->
+						<!-- </el-form-item> -->
+						<!-- <el-form-item> -->
+							<!-- 查询 -->
+							<!-- <el-button type="primary" size="small" style="margin-left: 20px;" @click="onSubmit">查询
+							</el-button>
+						</el-form-item>
+					</el-form> -->
+					<!--表格-->
+					<div class="table">
+						<el-table ref="multipleTable" :data="tableData" tooltip-effect="dark" style="width: 100%" border
+						size="small" header-row-class-name="headBgColor">
+
+							<el-table-column label="操作" width="50">
+								<template slot-scope="scope">
+									<el-button @click="dtClick(scope.row)" type="text" size="small">地图</el-button>
+								</template>
+							</el-table-column>
+
+							<el-table-column label="车牌号">
+								<template slot-scope="scope">
+									<el-button @click="cpClick(scope.row)" type="text" size="small">
+										{{ scope.row.plateNumber }}</el-button>
+								</template>
+							</el-table-column>
+
+							<el-table-column prop="runName" label="状态" width="100"></el-table-column>
+						</el-table>
+					</div>
+
+					<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
+						:current-page="currentPage" :page-sizes="sizes" :page-size="size" :total="total"
+						layout="total, sizes, prev, pager, next, jumper">
+					</el-pagination>
+				</div>
+				<div id="vehicleMap">
+
+				</div>
+			</section>
+		</section>
+	</div>
+	<script src="../../lib/jquery.1.11.3.min.js"></script>
+	<script src="../../lib/vue.js"></script>
+	<script src="../../lib/elementui/index.js"></script>
+	<script src="../../js/common.js"></script>
+	<script type="text/javascript">
+		var app = new Vue({
+			el: '#app',
+			data: {
+				map: null,
+				currentPage: 1,
+				total: 0,
+				size: 5,
+				page: 1,
+				sizes: [5, 10, 15, 20],
+				plateNumber: '',
+				tableData: [],
+			},
+			created: function () {
+				this.initData();
+			},
+			mounted: function () {
+				this.initMap();
+			},
+			methods: {
+				handleSizeChange(val) {
+					this.size = val;
+					this.initData();
+					// alert('每页'+size+' 条');
+				},
+				handleCurrentChange(val) {
+					this.page = val;
+					this.initData();
+					// alert('当前页: '+page);
+				},
+				onSubmit() {
+					this.page = 1;
+					this.size = 5;
+					this.initData();
+				},
+				cpClick(val) {
+					var str = JSON.stringify(val);
+					window.location.href = "./vehicleNumber.html?id=" + val.id;
+				},
+				dtClick(val) {
+					var str = JSON.stringify(val);
+					this.findGps(val.id);
+				},
+				initData() {
+					var _this = this;
+					var baseValue = {
+						pageSize: _this.size,
+						pageNum: _this.page,
+						plateNumber: _this.plateNumber
+					}
+					$.ajax({
+						type: "POST",
+						dataType: "json",
+						contentType: "application/json",
+						headers: {
+							"token": "365C4B4D935BFB8280CFE10577C952712",
+						},
+						url: "http://58.221.6.82:900/vehicletracking/findVehicleList",
+						data: JSON.stringify(baseValue),
+						success: function (res) {
+							// var str = JSON.stringify(res);
+							// alert(str);
+							var success = res.success;
+							var message = res.message;
+							var total = res.data.total;
+							var list = res.data.list;
+							var runArray = [];
+							for (var i in list) {
+								if (list[i].runFlag == "Y") {
+									list[i].runName = "运输中";
+								} else {
+									list[i].runName = "待运";
+								}
+								runArray.push(list[i]);
+							}
+							_this.tableData = list;
+							_this.total = total;
+						},
+						error: function () {
+							console.log("这个请求错误");
+						}
+					});
+				},
+				findGps(clid) {
+					var _this = this;
+					$.ajax({
+						type: "POST",
+						dataType: "json",
+						contentType: "application/json",
+						headers: {
+							"token": "365C4B4D935BFB8280CFE10577C952712",
+						},
+						url: "http://58.221.6.82:900/vehicletracking/findGps/" + clid,
+						success: function (res) {
+							// var str = '{\"code\":\"SUCCESS\",\"data\":[{\"id\":1,\"plateNumber\":\"豫S12345\",\"transportId\":1,\"addTime\":\"2019-03-18 10:14:21\",\"longitude\":116.301934,\"latitude\":39.977552,\"type\":\"\"},{\"id\":2,\"plateNumber\":\"豫S12345\",\"transportId\":1,\"addTime\":\"2019-03-18 10:14:21\",\"longitude\":106.603855,\"latitude\":29.599149,\"type\":\"\"},{\"id\":3,\"plateNumber\":\"豫S12345\",\"transportId\":1,\"addTime\":\"2019-03-18 10:14:21\",\"longitude\":113.268554,\"latitude\":23.140121,\"type\":\"\"}],\"success\":true,\"message\":\"操作成功\"}';
+							// alert(JSON.stringify(res));
+							// res = JSON.parse(str);
+							var list = res.data;
+							_this.test(list);
+						},
+						error: function () {
+							console.log("这个请求错误");
+						}
+					});
+				},
+				initMap() {
+					map = new BMap.Map("vehicleMap");
+					map.centerAndZoom("潢川", 6);
+					map.enableScrollWheelZoom(true);
+					// 去除路网
+					map.setMapStyle({
+						styleJson: [{
+								"featureType": "road",
+								"elementType": "all",
+								"stylers": {
+									"color": "#ffffff"
+								}
+							},
+							{
+								"featureType": "building",
+								"elementType": "all",
+								"stylers": {
+									"visibility": "off"
+								}
+							},
+							{
+								"featureType": "nationalway",
+								"elementType": "labels",
+								"stylers": {
+									"visibility": "off"
+								}
+							}, {
+								"featureType": "nationalway",
+								"elementType": "geometry",
+								"stylers": {
+									"visibility": "off"
+								}
+							},
+							{
+								"featureType": "poilabel",
+								"elementType": "all",
+								"stylers": {
+									"visibility": "off"
+								}
+							}
+						]
+					});
+				},
+				test(coords) {
+					this.initMap(); //初始化地图  为了删除之前的轨迹
+					// var coords = [{
+					// 		level: "1", //等级
+					// 		lng: "116.301934", //经度
+					// 		lat: "39.977552", //纬度
+					// 		name: "北京", //名称
+					// 		address: "工业大道99号" //地址
+					// 	},
+					// 	{
+					// 		level: "1",
+					// 		lng: "106.603855",
+					// 		lat: "29.599149",
+					// 		name: "重庆",
+					// 		address: "工业大道100号"
+					// 	},
+					// 	{
+					// 		level: "3",
+					// 		lng: "113.268554",
+					// 		lat: "23.140121",
+					// 		name: "广州",
+					// 		address: "工业大道101号"
+					// 	},
+					// 	{
+					// 		level: "2",
+					// 		lng: "119.294846",
+					// 		lat: "26.077314",
+					// 		name: "福州",
+					// 		address: "工业大道102号"
+					// 	},
+					// 	{
+					// 		level: "3",
+					// 		lng: "120.888368",
+					// 		lat: "31.988999",
+					// 		name: "南通",
+					// 		address: "工业大道103号"
+					// 	}
+					// ];
+					var lng = 0; //经度
+					var lat = 0; //纬度
+					//数据空值 以及重复处理
+					for (var i = 0; i < coords.length; i++) {
+						if (coords[i].longitude == null || coords[i].latitude == null) {
+							coords.splice(i, 1);
+							i--;
+						} else {
+							if (coords[i].longitude == lng && coords[i].latitude == lat) {
+								coords.splice(i, 1);
+								i--;
+							} else {
+								lng = coords[i].longitude;
+								lat = coords[i].latitude;
+							}
+						}
+					}
+					if (coords.length == 0) {
+						alert("未获取到路线信息！");
+					} else if (coords.length == 1) {
+						var point = new BMap.Point(coords[0].longitude, coords[0].latitude); //创建点
+						var myIcon = new BMap.Icon("../../img/routeMarker.png", new BMap.Size(15, 15), {
+							anchor: new BMap.Size(7.5, 7.5)
+						});
+						var marker = new BMap.Marker(point, {
+							icon: myIcon
+						}); // 创建标注
+						map.addOverlay(marker); //添加标注
+						map.centerAndZoom(point, 8); //自动调为中心
+						// this.addInfoWindow(marker, "出发地", "地址1"); //添加标签信息
+					} else {
+						var p0 = new BMap.Point(coords[0].longitude, coords[0].latitude);
+						var myIcon = new BMap.Icon("../../img/routeMarker.png", new BMap.Size(15, 15), {
+							anchor: new BMap.Size(7.5, 7.5)
+						}); //图标
+						var marker = new BMap.Marker(p0, {
+							icon: myIcon
+						}); // 创建标注
+						map.addOverlay(marker); //第一个点添加窗口信息  参考文档：http://lbsyun.baidu.com/jsdemo.htm#c1_11
+						// this.addInfoWindow(marker, "出发地", "地址1"); //添加标签信息
+						for (var i = 0; i < coords.length - 1; i++) {
+							var p1 = new BMap.Point(coords[i].longitude, coords[i].latitude); //起点
+							var p2 = new BMap.Point(coords[i + 1].longitude, coords[i + 1].latitude); //终点
+							var marker2 = new BMap.Marker(p2, {
+								icon: myIcon
+							}); // 创建标注
+							map.addOverlay(marker2);
+							var driving = new BMap.DrivingRoute(map, {
+								renderOptions: {
+									map: map,
+									autoViewport: false
+								},
+								onPolylinesSet: function (routes) {
+									//加载完成事件
+								},
+								onMarkersSet: function (routes) {
+									map.removeOverlay(routes[0].marker); //删除起点
+									map.removeOverlay(routes[routes.length - 1].marker); //删除终点
+								}
+							});
+							driving.search(p1, p2); //waypoints表示途经点
+						}
+					}
+				},
+				 //增加标签
+				addInfoWindow(marker, name, address) {
+					var title = '<div style="font-weight:bold;color:#ce5d48;font-size:14px">' + "仓库详情" + '</div>';
+					var html = [];
+					html.push(
+						'<table cellspacing="0" style="table-layout:fixed;width:100%;font:12px arial,simsun,sans-serif"><tbody>'
+					);
+					html.push('<tr>');
+					html.push(
+						'<td style="vertical-align:top;line-height:16px;width:38px;white-space:nowrap;word-break:keep-all">名称：</td>'
+					);
+					html.push('<td style="vertical-align:top;line-height:16px">' + name + ' </td>');
+					html.push('</tr>');
+					html.push('<tr>');
+					html.push(
+						'<td style="vertical-align:top;line-height:16px;width:38px;white-space:nowrap;word-break:keep-all">地址：</td>'
+					);
+					html.push('<td style="vertical-align:top;line-height:16px">' + address + ' </td>');
+					html.push('</tr>');
+					html.push('</tbody></table>');
+					var infoWindow = new BMap.InfoWindow(html.join(""), {
+						title: title,
+						width: 200
+					});
+					var openInfoWinFun = function () {
+						marker.openInfoWindow(infoWindow);
+						//map.centerAndZoom(marker.getPosition(),13);
+					}
+					marker.addEventListener("click", openInfoWinFun);
+					openInfoWinFun();
+				}
+			}
+		})
+
+
+		// // 百度地图API功能
+		// var map = new BMap.Map("vehicleMap"); //指向展示的id标签
+		// map.centerAndZoom("潢川", 12); //参数1：以 ** 为中心 ；参数2：放大级别，数值越大约高
+		// map.enableScrollWheelZoom(true); //设置 滚轮放大，拖拽
+		// //创建点
+		// var pt = new BMap.Point(115.054449, 32.13802)
+		// var myIcon = new BMap.Icon("http://lbsyun.baidu.com/jsdemo/img/fox.gif", new BMap.Size(300, 157));
+		// var marker2 = new BMap.Marker(pt, {
+		// 	icon: myIcon
+		// }); // 创建标注
+		// map.addOverlay(marker2); // 将标注添加到地图中
+	</script>
+</body>
+
+</html>

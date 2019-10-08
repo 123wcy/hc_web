@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>权限管理</title>
+		<link href="../../css/reset.css" rel="stylesheet"/>
+		<link href="../../css/style.css" rel="stylesheet"/>
+		<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet"/>
+		<link href="../../css/zheng/admin.css" rel="stylesheet"/>
+		<link href="../../css/common/sideBar.css" rel="stylesheet"/>
+		<style type="text/css">
+			[v-cloak]{display: none}
+			.pTitle{margin-bottom: 15px;font-size: 16px;text-align: center;}
+			.cityWrapper .el-checkbox{display: block;}
+			.cityWrapper .el-checkbox+.el-checkbox{margin-left:0;}
+			.table .el-table--small td, .el-table--small th{
+				padding: 8px 0;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app" class="rightSideBar" v-cloak>
+			<el-row>
+				<el-col :span="emSpan">
+					<p class="pTitle">员工信息</p>
+					<!--表格-->
+					<div class="table">
+						<el-table
+						ref="emSelection"
+						:data="emData"
+						tooltip-effect="dark"
+						style="width: 100%"
+						border
+						size="small"
+						header-row-class-name="headBgColor hideCheckbox"
+						@selection-change="emSelectionChange">
+							<el-table-column type="selection" width="55" align="center"></el-table-column>
+							<template v-for="(column,index) in emColumns">
+								<el-table-column v-if="column.options" :label="column.label" :fixed="column.fixed" :width="column.width ? column.width:''"
+								:prop="column.value" align="center" :key="column.value">
+									 <template slot-scope="scope">
+									 	<template v-for="col in column.options">
+									 		<el-button v-if="!col.isHidden(scope.row)" :type="col.types" size="small" @click="col.func(scope.row,scope.$index)">{{col.label?col.label : scope.row.roleName}}</el-button>
+									 	</template>
+									 </template>
+								</el-table-column>
+								<el-table-column v-else :show-overflow-tooltip="true" :label="column.label" :fixed="column.fixed" :width="column.width ? column.width:''"
+								:prop="column.value" align="center" :key="column.value"></el-table-column>
+							</template>
+						</el-table>
+						<div class="pageInation">
+							<el-pagination
+						        @size-change="handleSizeChange"
+							    @current-change="handleCurrentChange"
+							    :current-page="currentPage"
+							    :page-sizes="pageSizes"
+							    :page-size="pageSize"
+							    layout="total, sizes, prev, pager, next, jumper"
+							    :total="totalPage">
+						    </el-pagination>
+						</div>
+					</div>
+				</el-col>
+				<el-col :span="roleSpan" :offset="1" v-show="roleShow">
+					<p class="pTitle">角色信息</p>
+					<!--表格-->
+					<div class="table">
+						<el-table
+						ref="roleSelection"
+						:data="roleData"
+						tooltip-effect="dark"
+						style="width: 100%"
+						border
+						size="small"
+						header-row-class-name="headBgColor hideCheckbox"
+						@selection-change="roleSelectionChange">
+							<el-table-column type="selection" width="55" align="center"></el-table-column>
+							<el-table-column v-for="(column,index) in roleColumns" :key="column.value"
+							:label="column.label" :width="column.width ? column.width:''"
+							:prop="column.value" align="center"></el-table-column>
+						</el-table>
+						<div class="pageInation">
+							<el-pagination
+						        @size-change="handleSizeChangeR"
+							    @current-change="handleCurrentChangeR"
+							    :current-page="currentPageR"
+							    :page-sizes="pageSizes"
+							    :page-size="pageSizeR"
+							    layout="total, sizes, prev, pager, next, jumper"
+							    :total="totalPageR">
+						    </el-pagination>
+						</div>
+					</div>
+				</el-col>
+				<el-col :span="citySpan" :offset="1"  v-show="cityShow" class='cityWrapper'>
+					<el-col :span="24">
+						<el-form :inline="true" size="small">
+							<el-form-item label="仓库名称" label-width="80px"><el-input placeholder="请输入仓库名称" clearable @clear="onSubmit" v-model="wareHouseName"></el-input></el-form-item>
+							<el-form-item><el-button type="primary" style="margin-left: 20px;" @click="onSubmit">查询</el-button></el-form-item>
+						</el-form>
+					</el-col>
+					<el-col :span="8">
+						<p class="pTitle">县</p>
+						<div class="checkbox">
+						  	<el-checkbox-group v-model="checkedCity3" @change="citiesChange($event, 3)">
+						    	<el-checkbox v-for="(city,idx) in cities3" :label="city.id" :key="idx">{{city.name}}</el-checkbox>
+						    </el-checkbox-group>
+						</div>
+					</el-col>
+					<el-col :span="8" v-if="cities2.length>0">
+						<p class="pTitle">乡</p>
+						<div class="checkbox">
+						  	<el-checkbox-group v-model="checkedCity2" @change="citiesChange($event, 2)">
+						    	<el-checkbox v-for="(city,idx) in cities2" :label="city.id" :key="idx">{{city.name}}</el-checkbox>
+						    </el-checkbox-group>
+						</div>
+					</el-col>
+					<el-col :span="8" v-if="cities1.length>0">
+						<p class="pTitle">村</p>
+						<div class="checkbox">
+						  	<el-checkbox-group v-model="checkedCity1" @change="citiesChange($event, 1)">
+						    	<el-checkbox v-for="(city,idx) in cities1" :label="city.id" :key="idx">{{city.name}}</el-checkbox>
+						    </el-checkbox-group>
+						</div>
+					</el-col>
+				</el-col>
+			</el-row>
+			<el-row style="text-align: center;margin-top:35px;">
+				<el-button size="medium" type="primary" @click="saveInfo">保存</el-button>
+			</el-row>
+		</div>
+		<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+		<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+		<script type="text/javascript" src="../../lib/vue.js"></script>
+		<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+		<script type="text/javascript" src="../../js/common.js"></script>
+		<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+		<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+		<script type="text/javascript" src="../../api/easy.config.js"></script>
+		<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+		<script type="text/javascript">
+			var app = new Vue({
+				el: '#app',
+				data: function(){
+					return {
+						loading: false,
+						emSpan: 24,
+						roleSpan: 11,
+						citySpan: 11,
+						roleShow: false,
+						cityShow: false,
+						pageSizes: [10,20,30,50,100],
+						currentPage: 1, // 当前页码
+						pageSize: 10, // 默认一页显示数
+						totalPage: 1,
+						currentPageR: 1, // 当前页码
+						pageSizeR: 10, // 默认一页显示数
+						totalPageR: 1,
+						emSelection: [], // 多选
+						emData: [], // 员工数据
+						roleSelection:[],
+						roleData: [],
+						roleColumns:[
+							{value:'partName', label: '名称', width:'100'},
+							{value:'description', label: '描述'}
+						],
+						emColumns: [
+							{value:'employeeId', label: '员工编号', width:'100'},
+							{value:'name', label: '姓名'},
+							{value :'sex', label: '性别', width:'80'},
+							{value:'position', label: '职务'},
+							{
+								label: '角色信息',
+								value: 'roleName',
+								fixed: 'right',
+								options: [
+									{
+										label: '分配角色',
+										func: this.setRole,
+										types:'warning',
+										isHidden: function(row){
+											return row.roleName
+										}
+									},
+									{
+										label: '',
+										func: this.setRole,
+										types: 'warning',
+										isHidden: function(row){
+											return !row.roleName
+										}
+									}
+								]
+							},
+							{
+								label: '服务站点',
+								value: 'flag',
+								fixed: 'right',
+								options: [
+									{
+										label: '选择地址',
+										func: this.setAddress,
+										types: 'warning',
+										isHidden: function(row){
+											return false
+										}
+									}
+								]
+							}
+						],
+						checkedCity3: [], // 选中县
+						checkedCity2: [], // 选中乡
+						checkedCity1: [], // 选中村
+						cities3: [], // 县列表
+						cities2: [], // 乡列表
+						cities1: [], // 村列表
+						storeCity3:[], // 存储县列表
+						storeCity2: [], // 存储乡列表
+						storeCity1: [], // 存储村列表
+						oldRoleId: '', // 旧的角色id
+						emId: '', // 员工id
+						wareHouseName: '' // 模糊搜索仓库名称
+					}
+				},
+				computed: {
+					roleId: function(){
+						var id = [];
+						if(this.roleSelection.length > 0){
+							this.roleSelection.forEach(function(item){
+								id.push(item.id)
+							})
+						}
+						return id;
+					}
+				},
+				created(){
+					this.getEmData(); // 获取员工信息
+					this.getRoleData(); // 获取角色信息
+					this.getCityData(); // 获取仓库信息
+				},
+				methods:{
+					getEmData: function(){
+						var _this = this;
+						var data = {
+							pageSize: this.pageSize, // 每页显示条数
+							pageNum: this.currentPage // 当前页码
+						}
+						EasyAjax.ajax_Post_Json({
+							url: 'rolePermiss/findUserPermission',
+							data: JSON.stringify(data)
+						},function(res){
+							if(res.success === true){
+								// 员工信息
+								_this.emData = res.data.list;
+								_this.totalPage = res.data.total;
+							}
+						})
+					},
+					getRoleData: function(){
+						var _this = this;
+						var data = {
+							pageSize: this.pageSizeR, // 每页显示条数
+							pageNum: this.currentPageR // 当前页码
+						}
+						EasyAjax.ajax_Post_Json({
+							url: 'rolePermiss/findAllRole',
+							data: JSON.stringify(data)
+						},function(res){
+							if(res.success === true){
+								// 角色信息
+								_this.roleData = res.data.list;
+								_this.totalPageR = res.data.total;
+							}
+						})
+					},
+					getCityData: function(){
+						var _this = this;
+						EasyAjax.ajax_Post_Json({
+							url: 'warehouse/findAll'
+						},function(res){
+							if(res.success === true){
+								// 仓库信息
+								var data = res.data;
+								var city3 = [], city2 = [], city1 = [];
+								data.forEach(function(item){
+									if(item.level === 3){
+										city3.push(item);
+									}else if(item.level === 2){
+										city2.push(item);
+									}else if(item.level === 1){
+										city1.push(item);
+									}
+								})
+								_this.cities3 = city3; // 县
+								_this.cities2 = []; // 县
+								_this.cities1 = []; // 县
+								_this.storeCity3 = city3; // 县
+								_this.storeCity2 = city2; // 乡
+								_this.storeCity1 = city1; // 村
+							}
+						})
+					},
+					
+					// 设置角色
+					setRole: function(row, index){
+						this.emId = row.id; // 员工id
+						this.oldRoleId = row.roleId; // 角色id
+						this.emSpan = 12;
+						this.roleShow = true; // 显示角色
+						this.cityShow = false; // 关闭仓库
+						this.setTableCheck(row);
+						
+					},
+					// 设置地址
+					setAddress: function(row, index){
+						this.emId = row.id; // 员工id
+						this.oldRoleId = ''; // 清空角色id
+						this.emSpan = 12;
+						this.roleShow = false; // 显示角色
+						this.cityShow = true; // 关闭仓库
+						this.setTableCheck(row);
+						this.searchWare(row.id);
+					},
+					setTableCheck: function(row){
+						this.$refs.emSelection.clearSelection();
+						this.$refs.emSelection.toggleRowSelection(row);
+					},
+					citiesChange: function(value,tag){
+						var _this = this;
+						if(tag === 3){ // 县
+							if(this.checkedCity3.length >= 2){
+								this.checkedCity3.shift();
+							}
+							this.cities1 = [];
+							this.cities2 = this.getChild(this.checkedCity3[0], this.storeCity2);
+						}
+						if(tag === 2){ // 乡
+							var townData = [];
+							var townCheck = this.checkedCity2;
+							townCheck.forEach(function(item){
+								var data = _this.getChild(item, _this.storeCity1);
+								townData = townData.concat(data);
+							})
+							this.cities1 = townData;
+						}
+						
+					},
+				  	// 员工勾选
+				  	emSelectionChange: function(val){
+				  		this.emSelection = val;
+				  	},
+				  	// 角色勾选
+				  	roleSelectionChange: function(val){
+				  		this.roleSelection = val;
+				  	},
+				  	saveInfo: function(){
+				  		var _this = this;
+				  		var data = null;
+						var url = '';
+						
+				  		if(this.roleShow){ // 角色
+				  			if(this.roleId.length === 0){
+					  			this.$message.error('请先勾选角色信息');
+					  			return false;
+					  		}
+				  			
+				  			if(this.roleId.length > 1){
+					  			this.$message.error('只能选择一个角色');
+					  			return false;
+					  		}
+				  			data = {
+				  				userId: this.emId,
+				  				roleId: this.roleId[0]
+				  			}
+				  			url = 'rolePermiss/saveUserRole';
+				  			
+				  			if(this.oldRoleId){ // 说明此时是编辑角色
+				  				data.oldRoleId = this.oldRoleId;
+				  				url = 'rolePermiss/updUserRole';
+				  			}
+				  		}
+				  		if(this.cityShow){ // 仓库
+				  			if(this.checkedCity3.length === 0){
+					  			this.$message.error('请先勾选仓库');
+					  			return false;
+					  		}
+				  			var wIds = this.checkedCity3.concat(this.checkedCity2).concat(this.checkedCity1);
+				  			console.log(wIds, 'wIds')
+				  			data = {
+				  				userId: this.emId,
+				  				warehouseIds: wIds
+				  			}
+				  			url = 'rolePermiss/saveUserWare';
+				  		}
+				  		
+						EasyAjax.ajax_Post_Json({
+							url: url,
+							data: JSON.stringify(data)
+						},function(res){
+							_this.$message.success(res.message);
+							_this.getEmData();
+							_this.initRole();
+							_this.initCity();
+							_this.emSpan = 24;											
+						})
+				  	},
+				  	initRole: function(){
+				  		this.roleShow = false;
+				  		this.$refs.roleSelection.clearSelection();
+				  	},
+				  	initCity: function(){
+				  		this.cityShow = false;
+				  		this.cities2 = [];
+				  		this.cities1 = [];
+				  	},
+				  	// 找到仓库对应的子仓库
+				  	getChild: function(id, city){
+//				  		console.log(id, 'id')
+//				  		console.log(city, 'city')
+				  		var needChild = [];
+				  		city.forEach(function(item){
+				  			if(item.warehouseId === id){
+				  				needChild.push(item);
+				  			}
+				  		})
+				  		return needChild;
+				  	},
+				  	// 一页显示几条
+					handleSizeChange: function(val){
+						this.pageSize = val;
+						this.getEmData();
+					},
+					// 切换当前页
+					handleCurrentChange: function(val){
+						this.currentPage = val;
+						this.getEmData();
+					},
+					// 一页显示几条
+					handleSizeChangeR: function(val){
+						this.pageSizeR = val;
+						this.getRoleData();
+					},
+					// 切换当前页
+					handleCurrentChangeR: function(val){
+						this.currentPageR = val;
+						this.getRoleData();
+					},
+					// 已经有服务站点的，显示服务站点
+				  	searchWare: function(id){
+				  		var _this = this;
+				  		var data = {
+				  			userId: id
+				  		}
+				  		EasyAjax.ajax_Post_Json({
+							url: 'rolePermiss/findUserWareByID',
+							data: JSON.stringify(data)
+						},function(res){
+							if(res.success === true){
+								// 仓库信息
+								var data = res.data;
+								var city3 = [], city2 = [], city1 = [];
+								data.forEach(function(item){
+									if(item.level === 3){
+										city3.push(item.id);
+									}else if(item.level === 2){
+										city2.push(item.id);
+									}else if(item.level === 1){
+										city1.push(item.id);
+									}
+								})
+								// city3只有一条数据，即选中的县，city2是县下面的站点，city1是乡下面的站点
+								_this.cities3= _this.storeCity3;
+								_this.checkedCity3 = city3;
+								_this.cities2 = _this.getChild(city3[0], _this.storeCity2);
+								_this.checkedCity2 = city2;
+								var townData = [];
+								city2.forEach(function(item){
+									var data = _this.getChild(item, _this.storeCity1);
+									townData = townData.concat(data);
+								})
+								_this.cities1 = townData;
+								_this.checkedCity1 = city1;
+							}
+						})
+				  	},
+					// 模糊查询仓库名
+					onSubmit: function(){
+						var _this = this;
+						if(!this.wareHouseName){
+							this.getCityData();
+							return false;
+						}
+						var data = {
+							name: this.wareHouseName
+						}
+				  		EasyAjax.ajax_Post_Json({
+							url: 'rolePermiss/findWarehouseByName',
+							data: JSON.stringify(data),
+							defCallback: function(err){
+								_this.$message.error('请输入准确完整的仓库名');
+							}
+						},function(res){
+							if(res.success === true){
+								// 仓库信息
+								var data = res.data;
+								var city3 = [], city2 = [], city1 = [];
+								data.forEach(function(item){
+									if(item && item.level){
+										if(item.level === 3){
+											city3.push(item);
+										}else if(item.level === 2){
+											city2.push(item);
+										}else if(item.level === 1){
+											city1.push(item);
+										}
+									}
+								})
+								
+								_this.cities3 = city3; // 县
+								_this.cities2 = city2; // 乡
+								_this.cities1 = city1; // 村
+								
+								// 清空已选
+								_this.checkedCity3 = [];
+								_this.checkedCity2 = [];
+								_this.checkedCity1 = [];
+								
+							}
+						})
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

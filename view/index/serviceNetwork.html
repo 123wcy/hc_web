@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>服务网点</title>
+	<link href="../../css/bootstrap.min.css" rel="stylesheet" />
+	<link href="../../css/reset.css" rel="stylesheet" />
+	<link href="../../css/style.css" rel="stylesheet" />
+	<link href="../../css/zheng/admin.css" rel="stylesheet" />
+	<link href="../../css/zheng/abixTreeList.css" rel="stylesheet" />
+	<link rel="stylesheet" href="../../css/zTreeStyle/zTreeStyle.css" type="text/css">
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=9ZQIqbGfMnbch4DLAMGk98YwIRgruIpi">
+	</script>
+	<style type="text/css">
+		body,
+		html,
+		#allmap {
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+			margin: 0;
+			font-family: "微软雅黑";
+		}
+	</style>
+</head>
+
+<body>
+	<div id="main" class="clearfix" style="height: 80%;">
+		<div class="fl col-md-3">
+			<ul id="treeDemo" class="ztree"></ul>
+		</div>
+		<div class="fr col-md-9" style="width:100%;">
+			<div id="allmap"></div>
+		</div>
+	</div>
+	<script src="../../lib/jquery.1.11.3.min.js"></script>
+	<script src="../../js/zheng/abixTreeList.min.js"></script>
+	<script type="text/javascript" src="../../js/ztreejs/jquery.ztree.core.js"></script>
+	<script src="../../js/zheng/serviceNetwork.js"></script>
+</body>
+
+</html>

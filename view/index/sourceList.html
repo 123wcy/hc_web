@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>用户权限管理系统</title>
+	<link href="../../css/bootstrap.min.css" rel="stylesheet" />
+	<link href="../../css/reset.css" rel="stylesheet" />
+	<link href="../../css/style.css" rel="stylesheet" />
+	<link href="../../css/zheng/admin.css" rel="stylesheet" />
+	<link href="../../css/zheng/index.css" rel="stylesheet" />
+	<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet" />
+	<style type="text/css">
+		[v-cloak]{display: none;}
+		.source-info {
+			width: 100%;
+			margin-top: 0;
+		}
+
+		.info-dec {
+			margin-top: 0;
+		}
+
+		.el-pagination {
+			text-align: center;
+			margin-top: 20px;
+			margin-bottom: 20px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app" class="container clearfix" v-cloak>
+		<div class="source-info">
+			<div class="info-list">
+				<ul id="list_page" v-if="goodsList.length>0">
+					<li class="clearfix" v-for="(item,idx) in goodsList" @click="toSourcePage(item.id)">
+						<div class="info-dec fl">
+							<label>货源信息</label>
+							<i class="triangle-right"></i>
+							<span>{{item.goodsWeight}}kg/{{item.goodsVolume}}m³/{{item.goodsNumber}}件，{{item.goodsType}}/{{item.goodsName}}</span>
+						</div>
+						<div class="info-dec fl ml10">
+							<label>发货联系人</label>
+							<i class="triangle-right"></i>
+							<span>{{item.senderName}}/{{item.senderMobilephone}}</span>
+						</div>
+						<div class="info-dec fl ml10">
+							<label>收获地址</label>
+							<i class="triangle-right"></i>
+							<span>{{item.recipientAddress}}{{item.recipientStreet}}</span>
+						</div>
+						<p class="fr">{{item.createtime}}</p>
+					</li>
+				</ul>
+				<p v-else style="margin: 30px 0;text-align: center;font-size: 18px;">暂无数据</p>
+			</div>
+		</div>
+		<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
+			:page-sizes="sizes" :page-size="size" layout="total, sizes, prev, pager, next, jumper" :total="total">
+		</el-pagination>
+	</div>
+	<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+	<script type="text/javascript" src="../../lib/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+	<script type="text/javascript" src="../../lib/vue.js"></script>
+	<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+	<script type="text/javascript" src="../../js/common.js"></script>
+	<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+	<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+	<script type="text/javascript" src="../../api/easy.config.js"></script>
+	<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+	<!--<script src="../../js/zheng/sourceList.js"></script>-->
+	<script>
+		var app = new Vue({
+			el: "#app",
+			data: function () {
+				return {
+					goodsList: [],
+					currentPage: 1,
+		            total: 0,
+		            size: 5,
+		            page: 1,
+		            sizes: [5, 10, 15, 20]
+				}
+			},
+			created() {
+				this.getData();
+			},
+			methods: {
+				getData: function(){
+					var _this = this;
+					var baseValue = {
+				        pageSize: this.size,
+				        pageNum: this.page
+				    }
+					EasyAjax.ajax_Post_Json({
+						url: 'sources/queryPageList',
+						data: JSON.stringify(baseValue)
+					},function(res){
+						if(res.success === true){
+							_this.goodsList = res.data.list;
+							_this.total = res.data.total;
+						}
+					})
+				},
+				// 每页显示条数
+		        handleSizeChange(val) {
+		            this.size = val;
+		            this.getData();
+		            
+		        },
+		        // 当前页
+		        handleCurrentChange(val) {
+		            this.page = val;
+		            this.getData();
+		        },
+		        toSourcePage(id){
+		        	window.location.href = "sourceInformation.html?id="+id;
+		        }
+
+			}
+
+		})
+	</script>
+</body>
+
+</html>

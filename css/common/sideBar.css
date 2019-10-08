@@ -1,0 +1,68 @@
+.rightSideBar{
+	padding: 20px;
+}
+.rightSideBar .el-button--primary{
+	background-color:#5987cf;
+	color: #fff;
+}
+.rightSideBar .el-button--primary:hover,.rightSideBar .el-button--primary:active{
+	background-color: #68b1e3;
+}
+
+/*表格样式*/
+.table{margin-top:15px;}
+.table .el-table th.gutter{
+	display: table-cell!important;
+}
+.table .headBgColor th{
+	background:#337ab7; /*#eef5fd*/
+	color:#fff; /*#586276*/
+}
+.table .pageInation{
+	text-align: right;
+	margin-top: 12px;
+}
+.table .hideCheckbox th:first-child .cell{display: none;}
+
+/*表格停用样式*/
+.table .forbiddenUse{
+	background: #ebeef5;
+}
+/*表格高亮样式*/
+.table .el-table__row.heightLight{
+	background:#CAE1FF;
+}
+/*表格样式修改*/
+.table .el-table--small{
+	font-size: 14px;
+}
+.table .el-table--small th{
+	font-weight: 700;
+	padding: 13px 0;
+}
+.table .el-table--small td{
+	padding: 13px 0;
+	color: #333;
+}
+
+.table .el-table--border td,
+.table .el-table--border th,
+.table .el-table__body-wrapper .el-table--border.is-scrolling-left~.el-table__fixed{
+	border-right: 1px solid #ddd;
+}
+.table .el-table td,
+.table .el-table th.is-leaf{
+	border-bottom: 1px solid #ddd;
+}
+/*.table .el-checkbox__input.is-checked .el-checkbox__inner{
+	background-color: #337ab7;
+    border-color: #337ab7;
+}
+.table .el-checkbox__inner:hover{
+	border-color: #337ab7;
+}
+.table .el-checkbox__input.is-focus .el-checkbox__inner{border-color:#337ab7;}
+.table .headBgColor .el-checkbox__input.is-checked .el-checkbox__inner{background-color:#409EFF;}
+.table .headBgColor .el-checkbox__input.is-focus .el-checkbox__inner{border-color:#409EFF;}*/
+
+

@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>用户权限管理系统</title>
+	<link href="../../css/bootstrap.min.css" rel="stylesheet" />
+	<link href="../../css/reset.css" rel="stylesheet" />
+	<link href="../../css/style.css" rel="stylesheet" />
+	<link href="../../css/zheng/admin.css" rel="stylesheet" />
+	<link href="../../css/zheng/index.css" rel="stylesheet" />
+	<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet" />
+	<script src="../../lib/vue.js"></script>
+	<script src="../../lib/elementui/index.js"></script>
+	<script src="../../lib//jquery.1.11.3.min.js"></script>
+	<style type="text/css">
+		.news-info {
+			width: 100%;
+			margin-top: 0;
+		}
+
+		.info-dec {
+			margin-top: 0;
+		}
+
+		.el-pagination {
+			text-align: center;
+			margin-top: 20px;
+			margin-bottom: 20px;
+		}
+
+		.click-dec {
+			width: 1000px;
+		}
+	</style>
+</head>
+
+<body>
+	<!-- <header id="header">
+		<div class="hc-top clearfix">
+			<div class="title-hc fl">
+				<img class="img-responsive" src="../../img/logo.png" />
+			</div>
+			<div class="hc-menu fl">
+				<ul>
+					<li><a href="index.html">首页</a></li>
+					<li><a href="">仓库管理</a></li>
+					<li><a href="">运输管理</a></li>
+					<li><a href="vehicleTracking/vehicleTracking.html">车辆跟踪</a></li>
+					<li><a href="">签收管理</a></li>
+					<li><a href="">结算管理</a></li>
+					<li><a href="">基础设施</a></li>
+					<li><a href="">系统管理</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="login clearfix">
+			<img src="../../img/user.png" alt="">
+			<a href="login.html">登录</a>
+		</div>
+	</header> -->
+	<div id="app" class="container clearfix">
+		<div class="news-info">
+			<div class="news-list">
+				<ul id="list_page">
+
+					<!-- <li class="clearfix">
+						<img src="../../img/banner.jpg" alt="" class="fl" width="210" height="176">
+						<div class="click-dec fl ml50">
+							<div class="clearfix">
+								<h1 class="fl">潢川县予村达电子商务进农村项目第一次沟通协调会</h1><span class="fr">2018-09-09 08:09:23</span>
+							</div>
+							<div class="news-info">
+								<p>
+									12月11日，潢川县召开小潢河沿河三期工程建设推进会。县长兰恩民，县委常委、组织部长孔辉，县政府副县长胡峰，县国土局、住建局、水利局、房管中心、交通运输局等相关单位负责人，定城办事处、弋阳办事处负责人及辖下涉及的社区代表、施工方代表参加会议。
+								</p>
+								<p>会议由胡峰主持。</p>
+							</div>
+						</div>
+					</li> -->
+				</ul>
+			</div>
+		</div>
+		<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
+			:page-sizes="sizes" :page-size="size" :total="total" layout="total, sizes, prev, pager, next, jumper">
+		</el-pagination>
+	</div>
+	<script src="../../js/zheng/newsList.js"></script>
+	<!-- <script src="../../api/easy.cookie.js"></script>
+	<script src="../../api/easy.config.js"></script>
+	<script src="../../api/easy.ajax.js"></script> -->
+</body>
+
+</html>

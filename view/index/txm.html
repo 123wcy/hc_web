@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>潢川电子商务进农村</title>
+	<link href="../../css/bootstrap.min.css" rel="stylesheet" />
+	<link href="../../css/reset.css" rel="stylesheet" />
+	<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet" />
+	<script src="../../lib/jquery.1.11.3.min.js"></script>
+	<script type="text/javascript" src="../../lib/vue.js"></script>
+	<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+	<script src="../../lib/JsBarcode-master/JsBarcode.all.js"></script>
+	<!--生成条形码-->
+	<script src="../../lib/jQuery.print.min.js"></script>
+	<style type="text/css">
+		[v-cloak] {
+			display: none;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app" class="wrapper" v-cloak>
+		<img id="imgcode" />
+	</div>
+	<script type="text/javascript">
+		var app = new Vue({
+			el: '#app',
+			data: function () {
+				return {
+
+				}
+			},
+			created: function () {
+				JsBarcode("#imgcode", "123", {
+					format: "code128a", //选择要使用的条形码类型
+					width: 1, //设置条之间的宽度
+					height: 23, //高度
+					displayValue: false, //是否在条形码下方显示文字
+					text: "456", //覆盖显示的文本
+					// fontOptions: "bold italic", //使文字加粗体或变斜体
+					// font: "fantasy", //设置文本的字体
+					// textAlign: "left", //设置文本的水平对齐方式
+					// textPosition: "top", //设置文本的垂直位置
+					// textMargin: 5, //设置条形码和文本之间的间距
+					// fontSize: 15, //设置文本的大小
+					// background: "#eee", //设置条形码的背景
+					// lineColor: "#2196f3", //设置条和文本的颜色。
+					// margin: 15 //设置条形码周围的空白边距
+				});
+
+			},
+			methods: {
+
+			}
+		})
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,59 @@
+/**
+ * 公共样式
+ */
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    background: #eee;
+}
+
+[v-cloak] {
+    display: none;
+}
+
+/* 框架 */
+.nav-header {
+    width: 100%;
+    height: 159px;
+    background: #42a26b;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    margin: 0 auto;
+    min-width: 1200px;
+}
+
+.nav-left {
+    width: 10%;
+    /* height: calc(100vh - 159px); */
+    background: #f9f9f9;
+
+    height: 100%;
+    width: 200px;
+    overflow: hidden;
+    padding-bottom: 9999px;
+    margin-bottom: -9999px;
+    float: left;
+
+
+}
+
+.nav-right {
+    width: 100%;
+    padding-top: 20px;
+    background: #fff;
+    padding-bottom: 20px;
+    float: left;
+    height: auto;
+    min-height: 100%
+}
+
+/* btn */
+.operator-btn {
+    margin-right: 10px;
+}

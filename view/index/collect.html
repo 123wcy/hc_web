@@ -1,0 +1,694 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>潢川电子商务进农村</title>
+	<link rel="stylesheet" href="../../lib/bootstrap-3.3.7-dist/css/bootstrap.css">
+	<link href="../../css/reset.css" rel="stylesheet" />
+	<link href="../../css/zheng/admin.css" rel="stylesheet" />
+	<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet" />
+
+	<style>
+		#app {
+			padding: 40px 100px;
+		}
+
+		[v-cloak] {
+			display: none;
+		}
+
+		.demo-tab-nav .nav-tabs {
+			width: 348px;
+			margin: 0 auto;
+			border: 1px solid #337ab7;
+		}
+
+		.demo-tab-nav .nav-tabs li {
+			width: 173px;
+			text-align: center;
+		}
+
+		.demo-tab-table .nav-tabs {
+			width: 88px;
+			border: 1px solid #337ab7;
+		}
+
+		.demo-tab-table .nav-tabs li {
+			width: 87px;
+			text-align: center;
+		}
+
+		.demo-input-spec .nav-tabs {
+			width: 100px;
+			border: 1px solid #337ab7;
+		}
+
+		.demo-input-spec .nav-tabs li {
+			width: 49px;
+			text-align: center;
+		}
+
+		.demo-input-spec .nav>li>a {
+			padding: 2px 3px;
+		}
+
+		.demo-tab-table .nav-tabs>li>a {
+			line-height: 1.1;
+		}
+
+		.demo-input-spec .nav-tabs>li>a {
+			line-height: 1.1;
+		}
+
+		.demo-input-single {
+			width: 460px;
+		}
+
+		.el-cascader {
+			line-height: initial;
+			display: initial;
+		}
+
+		.demo-input-suffix {
+			width: 100%;
+		}
+
+		.demo-input-special {
+			width: 825px;
+		}
+
+		.tab-pane h1 {
+			background: url(../../img/title-bg.png) no-repeat;
+			width: 221px;
+			height: 52px;
+			text-indent: 40px;
+			line-height: 52px;
+			color: #fff;
+			font-size: 20px;
+			margin-top: 20px;
+		}
+
+		.demo-input-suffix {
+			margin-top: 20px;
+		}
+
+		.asterisk {
+			color: red;
+			margin-right: 5px;
+		}
+
+		.nav-tabs>li.active>a,
+		.nav-tabs>li.active>a:hover,
+		.nav-tabs>li.active>a:focus {
+			background: #337ab7;
+			color: #fff;
+			border: none;
+		}
+
+		.nav-tabs>li>a {
+			border-radius: 0;
+			margin: 0;
+			line-height: 2.1;
+			border: 0;
+		}
+
+		.nav-tabs>li>a:hover {
+			background: 0;
+		}
+
+		.demo-input-spec {
+			width: 355px;
+		}
+
+		.demo-input-spec2 {
+			width: 258px;
+		}
+
+		.el-select {
+			display: initial;
+		}
+
+		.demo-input-search {
+			width: 385px;
+			border: solid 1px #337ab7;
+		}
+
+		.demo-input-search input {
+			border: none;
+		}
+
+		.demo-input-search .el-input-group__append {
+			background: #337ab7;
+			color: #fff;
+			border: 0;
+			border-radius: 0;
+		}
+
+		.el-icon-search {
+			font-size: 25px;
+		}
+
+		.el-table th {
+			background: #337ab7;
+			color: #fff;
+		}
+
+		.el-pagination {
+			text-align: center;
+			margin-top: 40px;
+		}
+
+		.demo-btn {
+			width: 100%;
+			display: flex;
+			justify-content: center;
+		}
+
+		.el-button--primary {
+			background: #337ab7;
+			border: solid 1px #337ab7;
+		}
+
+		.el-button {
+			padding: 12px 50px;
+		}
+
+		.tsqk .form-control-feedback {
+			right: 60px;
+		}
+
+		.demo-btn button {
+			background: #337ab7;
+			color: #fff;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app" v-cloak>
+		<el-form class="demo-ruleForm tab-pane" :model="ruleForm" :rules="rules" ref="ruleForm">
+			<h1>寄件人信息</h1>
+			<div class="demo-input-suffix clearfix">
+				<div class="demo-input-single fl">
+					<el-form-item prop="senderName">
+						<div><i class="asterisk">*</i>姓名：</div>
+						<el-input v-model="ruleForm.senderName" id="senderName" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+				<div class="demo-input-single fr">
+					<el-form-item prop="senderCompany">
+						<div>公司：</div>
+						<el-input v-model="ruleForm.senderCompany" id="senderCompany" v-bind:disabled="true">
+						</el-input>
+					</el-form-item>
+				</div>
+			</div>
+			<div class="demo-input-suffix clearfix">
+				<div class="demo-input-single fl">
+					<el-form-item prop="senderMobilephone">
+						<div><i class="asterisk">*</i>手机：</div>
+						<el-input v-model="ruleForm.senderMobilephone" id="senderMobilephone" v-bind:disabled="true">
+						</el-input>
+					</el-form-item>
+				</div>
+
+				<div class="demo-input-single fr">
+					<el-form-item prop="senderPhone">
+						<div>固话：</div>
+						<el-input v-model="ruleForm.senderPhone" id="senderPhone" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+			</div>
+			<div class="demo-input-suffix">
+				<div class="demo-input-single demo-input-special">
+					<el-form-item prop="senderAddress">
+						<div><i class="asterisk">*</i>地址：</div>
+						<el-input v-model="ruleForm.senderStreet" id="senderAddress" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+			</div>
+			<div class="demo-input-suffix">
+				<div class="demo-input-single demo-input-special">
+					<el-form-item prop="senderStreet">
+						<div><i class="asterisk">*</i>详细地址：</div>
+						<el-input v-model="ruleForm.senderStreet" id="senderStreet" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+			</div>
+			<h1>收件人信息</h1>
+			<div class="demo-input-suffix clearfix">
+				<div class="demo-input-single fl">
+					<el-form-item prop="recipientName">
+						<div><i class="asterisk">*</i>姓名：</div>
+						<el-input v-model="ruleForm.recipientName" id="recipientName" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+				<div class="demo-input-single fr">
+					<el-form-item prop="recipientCompany">
+						<div>公司：</div>
+						<el-input v-model="ruleForm.recipientCompany" id="recipientCompany" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+			</div>
+			<div class="demo-input-suffix clearfix">
+				<div class="demo-input-single fl">
+					<el-form-item prop="recipientMobilephone">
+						<div><i class="asterisk">*</i>手机：</div>
+						<el-input v-model="ruleForm.recipientMobilephone" id="recipientMobilephone" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+				<div class="demo-input-single fr">
+					<el-form-item prop="recipientPhone">
+						<div>固话：</div>
+						<el-input v-model="ruleForm.recipientPhone" id="recipientPhone" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+			</div>
+			<div class="demo-input-suffix">
+				<div class="demo-input-single demo-input-special">
+					<el-form-item prop="recipientAddress">
+						<span><i class="asterisk">*</i>地址：</span>
+						<el-input v-model="ruleForm.recipientStreet" id="recipientAddress" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+			</div>
+			<div class="demo-input-suffix">
+				<div class="demo-input-single demo-input-special">
+					<el-form-item prop="recipientStreet">
+						<div><i class="asterisk">*</i>详细地址：</div>
+						<el-input v-model="ruleForm.recipientStreet" id="recipientStreet" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+			</div>
+			<h1>货物信息</h1>
+			<div class="demo-input-suffix clearfix">
+				<div class="demo-input-single demo-input-spec fl tsqk">
+					<el-form-item prop="goodsWeight">
+						<div><i class="asterisk">*</i>重量：</div>
+						<el-input v-model="ruleForm.goodsWeight" id="goodsWeight" v-bind:disabled="true">
+							<template slot="append">kg</template>
+						</el-input>
+					</el-form-item>
+				</div>
+				<div class="demo-input-single demo-input-spec tsqk fl ml40">
+					<el-form-item prop="goodsNumber">
+						<div><i class="asterisk">*</i>件数：</div>
+						<el-input v-model="ruleForm.goodsNumber" id="goodsNumber" v-bind:disabled="true">
+							<template slot="append">件</template>
+						</el-input>
+					</el-form-item>
+				</div>
+			</div>
+			<div class="demo-input-suffix clearfix">
+				<div class="demo-input-single demo-input-spec fl">
+					<div class="clearfix">
+						<div class="fl">体积：</div>
+						<ul class="nav nav-tabs fl">
+							<li class="active"><a href="#tj" data-toggle="tab">体积</a></li>
+							<li><a href="#ckg" data-toggle="tab">长宽高</a></li>
+						</ul>
+					</div>
+					<div class="tab-content">
+						<div class="demo-input-spec tab-pane fade in active" id="tj">
+							<el-form-item prop="goodsVolume">
+								<el-input v-model="ruleForm.goodsVolume" id="goodsVolume" v-bind:disabled="true">
+									<template slot="append">m²</template>
+								</el-input>
+							</el-form-item>
+						</div>
+						<div class="tab-pane fade clearfix" id="ckg">
+							<div class="demo-input-spec fl">
+								<el-form-item prop="goodsLength">
+									<el-input v-model="ruleForm.goodsLength" id="goodsLength" v-bind:disabled="true">
+										<template slot="append">m</template>
+									</el-input>
+								</el-form-item>
+							</div>
+							<div class="demo-input-spec mt10 fl">
+								<el-form-item prop="goodsWidth">
+									<el-input v-model="ruleForm.goodsWidth" id="goodsWidth" v-bind:disabled="true">
+										<template slot="append">m</template>
+									</el-input>
+								</el-form-item>
+							</div>
+							<div class="demo-input-spec mt10 fl">
+								<el-form-item prop="goodsHeight">
+									<el-input v-model="ruleForm.goodsHeight" id="goodsHeight" v-bind:disabled="true">
+										<template slot="append">m</template>
+									</el-input>
+								</el-form-item>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="demo-input-suffix clearfix">
+				<div class="demo-input-single demo-input-spec2 fl">
+					<el-form-item prop="goodsType">
+						<div><i class="asterisk">*</i>货物类型：</div>
+						<el-input v-model="ruleForm.goodsType" id="goodsType" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+				<div class="demo-input-single demo-input-spec2 fl ml40">
+					<el-form-item prop="goodsName">
+						<div>货物名称：</div>
+						<el-input v-model="ruleForm.goodsName" id="goodsName" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+				<div class="demo-input-single demo-input-spec2 fl ml40">
+					<el-form-item prop="paymentMethod">
+						<div><i class="asterisk">*</i>付款方式：</div>
+						<el-input v-model="ruleForm.paymentMethod" id="paymentMethod" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+				<div class="demo-input-single demo-input-spec2 fr">
+					<el-form-item prop="goodsMoney">
+						<div>金额：</div>
+						<el-input v-model="ruleForm.goodsMoney" id="goodsMoney" v-bind:disabled="true">
+							<template slot="append">元</template>
+						</el-input>
+					</el-form-item>
+				</div>
+			</div>
+			<div class="demo-input-suffix">
+				<div class="demo-input-single demo-input-special">
+					<el-form-item prop="remarks">
+						<div>备注：</div>
+						<el-input v-model="ruleForm.remarks" id="remarks" v-bind:disabled="true"></el-input>
+					</el-form-item>
+				</div>
+			</div>
+			<div class="demo-btn mt40">
+				<el-button type="submit" @click="sureCollect">确定揽收</el-button>
+			</div>
+		</el-form>
+
+	</div>
+	<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+	<script type="text/javascript" src="../../lib/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+	<script type="text/javascript" src="../../lib/vue.js"></script>
+	<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+	<script type="text/javascript" src="../../js/common.js"></script>
+	<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+	<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+	<script type="text/javascript" src="../../api/easy.config.js"></script>
+	<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+	<script type="text/javascript">
+		// "use strict";
+		var app = new Vue({
+			el: "#app",
+			data: function () {
+				return {
+					expressNumber: '',
+
+					placeholder1: '请选择',
+					placeholder2: '请选择',
+					separator: '',
+					platOptions: [],
+					props: {
+						label: 'regionName',
+						value: 'id',
+						children: 'child'
+					},
+					ruleForm: {
+						senderName: '',
+						senderCompany: '',
+						senderMobilephone: '',
+						senderPhone: '',
+						senderAddress: '',
+						senderStreet: '',
+						recipientName: '',
+						recipientMobilephone: '',
+						recipientCompany: '',
+						recipientPhone: '',
+						recipientAddress: '',
+						recipientStreet: '',
+
+						goodsName: '',
+						goodsWeight: '',
+						goodsNumber: '',
+						goodsVolume: '',
+						goodsType: '',
+						goodsLength: '',
+						goodsWidth: '',
+						goodsHeight: '',
+						paymentMethod: '',
+						goodsMoney: '',
+						remarks: '',
+						selectedOptions1: '',
+						selectedOptions2: '',
+					},
+					rules: {
+						senderName: [{
+								required: true,
+								message: '寄件人姓名不能为空！',
+								trigger: 'blur'
+							},
+							{
+								pattern: /^[\u2E80-\u9FFF]+$/,
+								message: '寄件人姓名只能输入汉字！',
+								trigger: 'blur'
+							}
+						],
+						senderMobilephone: [{
+								required: true,
+								message: '寄件人手机号码不能为空！',
+								trigger: 'blur'
+							},
+							{
+								pattern: /^1[34578]\d{9}$/,
+								message: '手机号码格式不正确',
+								trigger: 'blur'
+							}
+						],
+						senderPhone: [{
+								required: false,
+							},
+							{
+								pattern: /^((\d{3,4})-)(\d{7,8})(-(\d{3,}))?$/,
+								message: '例：025-88888888-8888，区号必须要输入，没有分机号可不输！',
+								trigger: 'blur'
+							}
+						],
+						senderAddress: [{
+							required: true,
+							message: '寄件人地址不能为空！',
+							trigger: 'blur'
+						}],
+						senderStreet: [{
+							required: true,
+							message: '寄件人详细不能为空！',
+							trigger: 'blur'
+						}],
+
+						recipientName: [{
+								required: true,
+								message: '收件人姓名不能为空！',
+								trigger: 'blur'
+							},
+							{
+								pattern: /^[\u2E80-\u9FFF]+$/,
+								message: '收件人姓名只能输入汉字！',
+								trigger: 'blur'
+							}
+						],
+						recipientMobilephone: [{
+								required: true,
+								message: '收件人手机号码不能为空！',
+								trigger: 'blur'
+							},
+							{
+								pattern: /^1[34578]\d{9}$/,
+								message: '手机号码格式不正确',
+								trigger: 'blur'
+							}
+						],
+						recipientPhone: [{
+								required: false,
+							},
+							{
+								pattern: /^((\d{3,4})-)(\d{7,8})(-(\d{3,}))?$/,
+								message: '例：025-88888888-8888，区号必须要输入，没有分机号可不输！',
+								trigger: 'blur'
+							}
+						],
+						recipientAddress: [{
+							required: true,
+							message: '收件人地址不能为空！',
+							trigger: 'blur'
+						}],
+						recipientStreet: [{
+							required: true,
+							message: '收件人详细地址不能为空！',
+							trigger: 'blur'
+						}],
+
+
+						goodsWeight: [{
+							required: true,
+							message: '货物重量不能为空！',
+							trigger: 'blur'
+						}],
+						goodsNumber: [{
+							required: true,
+							message: '货物不能为空！',
+							trigger: 'blur'
+						}],
+						goodsType: [{
+							required: true,
+							message: '货物类型不能为空！',
+							trigger: 'blur'
+						}],
+						paymentMethod: [{
+							required: true,
+							message: '付款方式不能为空！',
+							trigger: 'blur'
+						}],
+					},
+					options2: [],
+					options3: [{
+							id: "0",
+							name: "寄付现结"
+						},
+						{
+							id: "1",
+							name: "到付"
+						},
+						{
+							id: "2",
+							name: "月结"
+						}
+					],
+					loading: false,
+				}
+			},
+			created() {
+				// this.getPlatCategory();
+				// this.findNativePlace();
+				this.collect();
+			},
+			mounted() {
+
+			},
+			methods: {
+
+				//揽收显示信息
+				collect: function () {
+					var url = location.search;
+					var Request = new Object();
+					// var jsnumber=$("#jsnumber").val();
+					if (url.indexOf("?") != -1) {
+						var str = url.substr(1) //去掉?号
+						strs = str.split("&");
+						for (var i = 0; i < strs.length; i++) {
+							Request[strs[i].split("=")[0]] = unescape(strs[i].split("=")[1]);
+						}
+					}
+
+					var expressNumber = Request["expressNumber"];
+
+					var _this = this;
+					var baseValue = {
+						expressNumber: _this.expressNumber,
+					}
+					
+					EasyAjax.ajax_Get_Json({
+						url: 'express/findByCondition?expressNumber='+expressNumber
+					},function(res){
+						if(res.success === true){
+							var data = res.data;
+							var id = data.id;
+							// var createtime = data.createtime;
+							var senderName = data.senderName;
+							var senderMobilephone = data.senderMobilephone;
+							var senderCompany = data.senderCompany;
+							var senderPhone = data.senderPhone;
+							var senderAddress = data.senderAddress;
+							var senderStreet = data.senderStreet;
+							var recipientName = data.recipientName;
+							var recipientMobilephone = data.recipientMobilephone;
+							var recipientCompany = data.recipientCompany;
+							var recipientPhone = data.recipientPhone;
+							var recipientAddress = data.recipientAddress;
+							var recipientStreet = data.recipientStreet;
+							var goodsName = data.goodsName;
+							var goodsWeight = data.goodsWeight;
+							var goodsNumber = data.goodsNumber;
+							var goodsVolume = data.goodsVolume;
+							var goodsLength = data.goodsLength;
+							var goodsWidth = data.goodsWidth;
+							var goodsHeight = data.goodsHeight;
+							var goodsType = data.goodsType;
+							var goodsMoney = data.goodsMoney;
+							var delFlag = data.delFlag;
+							var remarks = data.remarks;
+							var paymentMethod = data.paymentMethod;
+
+							// $("#createtime").val(createtime);
+							$("#senderName").val(senderName);
+							$("#senderMobilephone").val(senderMobilephone);
+							$("#senderCompany").val(senderCompany);
+							$("#senderPhone").val(senderPhone);
+							$("#senderAddress").val(senderAddress);
+							$("#senderStreet").val(senderStreet);
+							$("#recipientName").val(recipientName);
+							$("#recipientMobilephone").val(recipientMobilephone);
+							$("#recipientCompany").val(recipientCompany);
+							$("#recipientPhone").val(recipientPhone);
+							$("#recipientAddress").val(recipientAddress);
+							$("#recipientStreet").val(recipientStreet);
+							$("#goodsName").val(goodsName);
+							$("#goodsWeight").val(goodsWeight);
+							$("#goodsNumber").val(goodsNumber);
+							$("#goodsVolume").val(goodsVolume);
+							$("#goodsLength").val(goodsLength);
+							$("#goodsWidth").val(goodsWidth);
+							$("#goodsHeight").val(goodsHeight);
+							$("#goodsType").val(goodsType);
+							$("#goodsMoney").val(goodsMoney);
+							$("#delFlag").val(delFlag);
+							$("#remarks").val(remarks);
+							$("#paymentMethod").val(paymentMethod);
+						}
+					})
+				},
+				sureCollect: function () {
+					var url = location.search;
+					var Request = new Object();
+					// var jsnumber=$("#jsnumber").val();
+					if (url.indexOf("?") != -1) {
+						var str = url.substr(1) //去掉?号
+						strs = str.split("&");
+						for (var i = 0; i < strs.length; i++) {
+							Request[strs[i].split("=")[0]] = unescape(strs[i].split("=")[1]);
+						}
+					}
+
+					var expressNumber = Request["expressNumber"];
+
+					var _this = this;
+					var baseValue = {
+						expressNumber: _this.expressNumber,
+					}
+					
+					EasyAjax.ajax_Get_Json({
+						url: 'express/collectExpress?expressNumber='+expressNumber
+					},function(res){
+						_this.$message.success(res.message);
+						setTimeout(function(){
+							window.location.href = './mailTracking.html?type=track'
+						},1000)
+					})
+				}
+
+			}
+
+		})
+	</script>
+</body>
+
+</html>

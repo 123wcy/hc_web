@@ -1,0 +1,75 @@
+  .treeTitle {
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	font-size: 12px;
+  	background: #337ab7;
+  	color: #fff;
+  	border: 1px solid #ddd;
+  	border-bottom: none;
+  	text-align: center;
+  }
+  
+  .treeTitle .left {
+  	flex: 1;
+  	text-align: center;
+  }
+  
+  .treeTitle .right {
+  	height: 40px;
+  	font-size: 0;
+  }
+  
+  .treeTitle .right .spanItem{
+  	display: inline-block;
+  	height: 40px;
+  	line-height: 40px;
+  	width: 150px;
+  	border-left: 1px solid #ddd;
+  	font-size: 12px;
+  	text-align: center;
+  }
+  .treeTitle .right .spanItem.describe{
+  	width: 300px;
+  }
+  .el-tree {
+  	border: 1px solid #ddd;
+  	border-bottom: none;
+  }
+  
+  .el-tree-node__content {
+  	border-bottom: 1px solid #ddd;
+  }
+  
+  .custom-tree-node {
+  	flex: 1;
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	font-size: 12px;
+  	height: 100%;
+  }
+  
+  .custom-tree-node .right {
+  	display: flex;
+  	height: 100%;
+  }
+  
+  .custom-tree-node .right .rightItem {
+  	width: 150px;
+  	height: 100%;
+  	border-left: 1px solid #ddd;
+  	display: flex;
+  	overflow: hidden;
+  }
+  .custom-tree-node .right .rightItem.describe{
+  	width: 300px;
+  }
+  
+  .custom-tree-node .right .rightItem span {
+  	display: inline-block;
+  	margin: auto;
+  	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
+  }

@@ -1,0 +1,257 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>用户权限管理系统</title>
+	<link href="../../css/bootstrap.min.css" rel="stylesheet" />
+	<link href="../../css/reset.css" rel="stylesheet" />
+	<link href="../../css/style.css" rel="stylesheet" />
+	<link href="../../css/zheng/admin.css" rel="stylesheet" />
+	<link href="../../css/zheng/index.css" rel="stylesheet" />
+	<link href="../../lib/elementui/theme-chalk/index.css" rel="stylesheet"/> 
+	<style type="text/css">
+		.row{
+			margin-left:0;margin-right:0;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app">
+		<div class="row">
+			<div class="container-fluid">
+				<div class="home-query">
+					<form role="form" class="form-ser">
+						<input type="text" class="form-item" v-model="searchVal" placeholder="输入单号">
+						<input type="button" name="" class="form-btn" value="马上查询" @click="toQueryMailPage">
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="home-function">
+				<ul class="clearfix">
+					<li>
+						<img src="../../img/jijian.png">
+						<a href="javascript:;" @click="toTargetPage('mailTracking.html?type=sendmail')">我要寄件</a> <!--sendMail.html-->
+					</li>
+					<li>
+						<img src="../../img/zhuizong.png">
+						<a href="javascript:;" @click="toTargetPage('mailTracking.html?type=track')">运单追踪</a> <!--mailTracking.html-->
+					</li>
+					<li>
+						<img src="../../img/latticepoint.png">
+						<a href="javascript:;" @click="toTargetPage('serviceNetwork.html')">服务网点</a>
+					</li>
+					<li>
+						<img src="../../img/yunfei.png">
+						<a href="javascript:;" @click="toPage('fareQuery.html')">运费、时效查询</a>
+					</li>
+					<li>
+						<img src="../../img/fabu.png">
+						<a href="javascript:;" @click="toTargetPage('releaseSource.html')">发布货源</a>
+					</li>
+					<li>
+						<img src="../../img/custom service.png">
+						<a href="javascript:;" @click="noUse">在线客服</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="container clearfix">
+			<div class="source-info fl">
+				<div class="source-tit">
+					<h1>货源信息</h1>
+					<img src="../../img/title.png" alt="">
+				</div>
+				<div class="look clearfix"><a href="sourceList.html" class="fr">查看全部》</a></div>
+				<div class="info-list">
+					<ul id="info-list" v-if="sourceList.length>0">
+						<li class="clearfix" v-for="(item,idx) in sourceList" :key="idx" @click="toSourceDetailPage(item.id)">
+							<div class="info-dec">
+								<label>货源信息</label>
+								<i class="triangle-right"></i>
+								<span>{{item.goodsWeight}}kg/{{item.goodsVolume}}m³/{{item.goodsNumber}}件 /{{item.goodsType}}/{{item.goodsName}}</span>
+							</div>
+							<div class="info-dec">
+								<label>发货联系人</label>
+								<i class="triangle-right"></i>
+								<span>{{item.senderName}}/{{item.senderMobilephone}}</span>
+							</div>
+							<div class="info-dec">
+								<label>收货地址</label>
+								<i class="triangle-right"></i>
+								<span>{{item.recipientAddress}}{{item.recipientStreet}}</span>
+							</div>
+							<p class="fr">{{item.createtime}}</p>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="mid-line fl">
+				<h1></h1>
+			</div>
+			<div class="news-info fr">
+				<div class="source-tit">
+					<h1>新闻资讯</h1>
+					<img src="../../img/title.png" alt="">
+				</div>
+				<div class="look clearfix"><a href="newsList.html" class="fr">查看全部》</a></div>
+				<div class="news-list">
+					<ul id="news-list" v-if="newsList.length>0">
+						<li class="clearfix" v-for="(item,idx) in newsList" :key="idx">
+							<img src="http://images.wlynj.com:8090/group1/M00/00/0F/rBB3OFysEMSAYzi9AABGMN7flyw043.jpg" alt="" class="fl" width="210" height="176">
+							<div class="click-dec fr">
+								<h1>{{item.title}}</h1>
+								<a href="javascript:;" @click="toNewsDetailPage(item.id)">[点击详情]</a>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<footer id="footer">
+			<div style="height: 62px;"></div>
+			<div class="yq-link">
+				<ul>
+					<li>
+						<h1>友情链接</h1>
+						<p>河南华阁供应链科技有限公司</p>
+						<p>上海阁为信息科技有限公司</p>
+						<p>河南华英农业发展股份有限公司</p>
+					</li>
+					<li>
+						<h1>物流</h1>
+						<p>快递服务</p>
+						<p>物流服务</p>
+						<p>冷链服务</p>
+					</li>
+					<li>
+						<h1>服务与支持</h1>
+						<p>我要寄</p>
+						<p>运单追踪</p>
+						<p>服务网点</p>
+						<p>运费、时效查询</p>
+					</li>
+					<li>
+						<h1>关于我们</h1>
+						<p>公司简介</p>
+						<p>新闻资讯</p>
+						<p>人才招聘</p>
+					</li>
+					<li>
+						<h1>联系我们</h1>
+						<p>座机：0376-8888888</p>
+						<p>全国热线：4001234567</p>
+					</li>
+					<li>
+						<h1>马上联系我们</h1>
+						<img src="../../img/wechat-icon.png" alt="">
+					</li>
+				</ul>
+			</div>
+			<div class="copyright">Copyright © 2018 上海阁为信息科技有限公司 版权所有 沪ICP备17022322号-2</div>
+		</footer>
+	</div>
+	<script type="text/javascript" src="../../lib/jquery.1.11.3.min.js"></script>
+	<script type="text/javascript" src="../../lib/jquery.cookie.js" ></script>
+	<script type="text/javascript" src="../../lib/vue.js"></script>
+	<script type="text/javascript" src="../../lib/elementui/index.js"></script>
+	<script type="text/javascript" src="../../js/common.js"></script>
+	<script type="text/javascript" src="../../lib/message/message.min.js" ></script>
+	<script type="text/javascript" src="../../api/easy.cookie.js"></script>
+	<script type="text/javascript" src="../../api/easy.config.js"></script>
+	<script type="text/javascript" src="../../api/easy.ajax.js"></script>
+	<!--<script src="../../js/zheng/index.js"></script>-->
+	<script type="text/javascript">
+		var app = new Vue({
+				el: '#app',
+				data: function(){
+					return {
+						searchVal: '',
+						sourceList: [],
+						newsList: []
+					}
+				},
+				created: function(){
+					this.getSourceData();
+					this.getNewsData();
+				},
+				methods: {
+					getSourceData: function(){
+						var _this = this;
+						var baseValue = {
+					        pageSize: 3,
+					        pageNum: 1
+					    }
+						EasyAjax.ajax_Post_Json({
+							url: 'sources/queryPageList',
+							data: JSON.stringify(baseValue)
+						},function(res){
+							if(res.success === true){
+								_this.sourceList = res.data.list;
+							}
+						})
+					},
+					getNewsData: function(){
+						var _this = this;
+						var baseValue = {
+					        pageSize: 2,
+					        pageNum: 1
+					    }
+						EasyAjax.ajax_Post_Json({
+							url: 'news/queryPageList',
+							data: JSON.stringify(baseValue)
+						},function(res){
+							if(res.success === true){
+								_this.newsList = res.data.list;
+							}
+						})
+					},
+					// 货源详情
+					toSourceDetailPage: function(id){
+						window.location.href = "sourceInformation.html?id="+id;
+					},
+					// 新闻列表详情
+					toNewsDetailPage: function(id){
+						window.location.href = "page.html?id="+id;
+					},
+					//权限判断
+					toTargetPage: function(tag){
+						if(!easyCookie.get_token()){ // 未登陆
+							top.location.href = '../../login.html';
+							return false;
+						}
+						window.location.href = tag;
+					},
+					toQueryMailPage: function(){
+						if(!easyCookie.get_token()){ // 未登陆
+							top.location.href = '../../login.html';
+							return false;
+						}
+						if(!this.searchVal){
+							this.$message.error('请先输入运单号');
+							return false;
+						}
+						window.location.href = "mailTracking.html?expressNumber="+this.searchVal;
+					},
+					toPage: function(tag){
+						window.location.href = tag;
+					},
+					// 未开通这个功能
+					noUse: function(){
+						this.$alert('暂未开通，敬请期待', '', {
+	          				confirmButtonText: '确定',
+	          				center: true,
+	          				showClose: false
+	          			})
+					}
+				}
+			})
+	</script>
+</body>
+
+</html>
